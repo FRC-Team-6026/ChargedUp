@@ -1,18 +1,18 @@
 package frc.lib.config;
 
-import com.ctre.phoenixpro.configs.CANcoderConfiguration;
-import com.ctre.phoenixpro.signals.AbsoluteSensorRangeValue;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
+import com.ctre.phoenix.sensors.CANCoderConfiguration;
 
 import frc.robot.Constants;
 
 public final class CTREConfigs {
-  public CANcoderConfiguration swerveCanCoderConfig;
+  public CANCoderConfiguration swerveCanCoderConfig;
 
   public CTREConfigs() {
-    swerveCanCoderConfig = new CANcoderConfiguration();
+    swerveCanCoderConfig = new CANCoderConfiguration();
 
     /* Swerve CANCoder Configuration */
-    swerveCanCoderConfig.MagnetSensor.AbsoluteSensorRange = AbsoluteSensorRangeValue.Unsigned_0To1;
-    swerveCanCoderConfig.MagnetSensor.SensorDirection = Constants.Swerve.canCoderInvert;
+    swerveCanCoderConfig.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
+    swerveCanCoderConfig.sensorDirection = Constants.Swerve.canCoderInvert;
   }
 }
