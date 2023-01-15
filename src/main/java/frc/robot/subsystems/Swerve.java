@@ -19,7 +19,7 @@ public class Swerve extends SubsystemBase {
   private final AHRS gyro;
 
   private SwerveDriveOdometry swerveOdometry;
-  private SwerveModule[] mSwerveMods;
+  public SwerveModule[] mSwerveMods;
 
   private Field2d field;
 
@@ -40,6 +40,12 @@ public class Swerve extends SubsystemBase {
 
     field = new Field2d();
     SmartDashboard.putData("Field", field);
+  }
+
+  public void resetAbsolute(){
+    for (SwerveModule swerveModule : mSwerveMods) {
+      swerveModule.resetToAbsolute();
+    }
   }
 
   public void drive(
@@ -95,9 +101,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public Rotation2d getYaw() {
-    return (Constants.Swerve.invertGyro)
-        ? Rotation2d.fromDegrees(360 - gyro.getYaw())
-        : Rotation2d.fromDegrees(gyro.getYaw());
+    return gyro.getRotation2d();
   }
 
   @Override
