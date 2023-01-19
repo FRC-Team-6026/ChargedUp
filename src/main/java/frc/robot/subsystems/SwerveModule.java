@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.lib.config.SwerveModuleConstants;
 import frc.lib.math.OnboardModuleState;
@@ -67,9 +68,11 @@ public class SwerveModule {
     setSpeed(desiredState, isOpenLoop);
   }
 
-  private void resetToAbsolute() {
+  void resetToAbsolute() {
     double absolutePosition = getCanCoder().getDegrees() - angleOffset.getDegrees();
-    integratedAngleEncoder.setPosition(absolutePosition);
+    //double currentPosition = integratedAngleEncoder.getPosition();
+    var result = integratedAngleEncoder.setPosition(absolutePosition);
+    SmartDashboard.putNumber("null", absolutePosition);
   }
 
   private void configAngleEncoder() {
