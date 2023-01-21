@@ -35,17 +35,10 @@ public class Swerve extends SubsystemBase {
           new SwerveModule(2, Constants.Swerve.Mod2.constants),
           new SwerveModule(3, Constants.Swerve.Mod3.constants)
         };
-      resetModulesToAbsolute();
     swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getPositions());
 
     field = new Field2d();
     SmartDashboard.putData("Field", field);
-  }
-
-  public void resetModulesToAbsolute() {
-    for(SwerveModule mod :mSwerveMods){
-      mod.resetToAbsolute();
-    }
   }
 
   public void drive(

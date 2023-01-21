@@ -10,7 +10,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.lib.config.SwerveModuleConstants;
 import frc.lib.math.OnboardModuleState;
@@ -70,9 +69,7 @@ public class SwerveModule {
 
   void resetToAbsolute() {
     double absolutePosition = getCanCoder().getDegrees() - angleOffset.getDegrees();
-    //double currentPosition = integratedAngleEncoder.getPosition();
-    var result = integratedAngleEncoder.setPosition(absolutePosition);
-    SmartDashboard.putNumber("null", absolutePosition);
+    integratedAngleEncoder.setPosition(absolutePosition);
   }
 
   private void configAngleEncoder() {
@@ -92,7 +89,7 @@ public class SwerveModule {
     angleController.setFF(Constants.Swerve.angleKFF);
     angleMotor.enableVoltageCompensation(Constants.Swerve.voltageComp);
     angleMotor.burnFlash();
-    resetToAbsolute(); // <- The Offending Call being called to early (Speculatively before Phionex Library is loaded)
+    resetToAbsolute();
   }
 
   private void configDriveMotor() {

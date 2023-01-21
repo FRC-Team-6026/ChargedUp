@@ -39,8 +39,6 @@ public class TeleopSwerve extends CommandBase {
   @Override
   public void initialize()
   {
-    s_Swerve.resetModulesToAbsolute();
-    Timer.delay(2);
   }
 
   @Override

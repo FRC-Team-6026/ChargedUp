@@ -32,8 +32,6 @@ public class RobotContainer {
   /* Driver Buttons */
   private final JoystickButton zeroGyro =
       new JoystickButton(driver, XboxController.Button.kY.value);
-  private final JoystickButton absoluteProc = 
-      new JoystickButton(driver, XboxController.Button.kA.value);
   private final JoystickButton robotCentricBumper =
       new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
   private boolean robotCentric = false;
@@ -64,7 +62,6 @@ public class RobotContainer {
   private void configureButtonBindings() {
     /* Driver Buttons */
     zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro()));
-    absoluteProc.onTrue(new InstantCommand(() -> s_Swerve.resetModulesToAbsolute()));
     robotCentricBumper.onTrue(new InstantCommand(() -> {
       robotCentric = !robotCentric;
       SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
