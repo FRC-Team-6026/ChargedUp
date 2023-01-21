@@ -13,7 +13,7 @@ public final class Constants {
   public static final class Swerve {
     public static final double stickDeadband = 0.15;
 
-    public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
+    public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
     /* Drivetrain Constants */
     public static final double trackWidth = 0.55;
@@ -25,7 +25,7 @@ public final class Constants {
     public static final double closedLoopRamp = 0.0;
 
     public static final double driveGearRatio = (6.75 / 1.0); // 6.75:1
-    public static final double angleGearRatio = ((150/7) / 1.0); // 12.8:1
+    public static final double angleGearRatio = (150/7); // 150:7
 
     public static final SwerveDriveKinematics swerveKinematics =
         new SwerveDriveKinematics(
@@ -48,14 +48,14 @@ public final class Constants {
     public static final double angleKFF = 0.0;
 
     /* Drive Motor PID Values */
-    public static final double driveKP = 0.1;
+    public static final double driveKP = 0.3;
     public static final double driveKI = 0.0;
     public static final double driveKD = 0.0;
     public static final double driveKFF = 0.0;
 
     /* Drive Motor Characterization Values */
-    public static final double driveKS = 0.667;
-    public static final double driveKV = 2.44;
+    public static final double driveKS = 0.3;
+    public static final double driveKV = 2.55;
     public static final double driveKA = 0.27;
 
     /* Drive Motor Conversion Factors */
@@ -65,8 +65,8 @@ public final class Constants {
     public static final double angleConversionFactor = 360.0 / angleGearRatio;
 
     /* Swerve Profiling Values */
-    public static final double maxSpeed = 0.5; // meters per second
-    public static final double maxAngularVelocity = 11.5;
+    public static final double maxSpeed = 4; // meters per second
+    public static final double maxAngularVelocity = 4; //radians per second
 
     /* Neutral Modes */
     public static final IdleMode angleNeutralMode = IdleMode.kBrake;

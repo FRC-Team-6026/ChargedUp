@@ -3,7 +3,6 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants;
 import frc.robot.subsystems.Swerve;
@@ -44,21 +43,25 @@ public class TeleopSwerve extends CommandBase {
   @Override
   public void execute() {
     /* Get Values, Deadband*/
-    double translationVal =
-        translationLimiter.calculate(
-            MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.Swerve.stickDeadband));
-    double strafeVal =
-        strafeLimiter.calculate(
-            MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.Swerve.stickDeadband));
-    double rotationVal =
-        rotationLimiter.calculate(
-            MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.Swerve.stickDeadband));
+    double translationVal = MathUtil.applyDeadband(translationSup.getAsDouble(), Constants.Swerve.stickDeadband);
+    double strafeVal = MathUtil.applyDeadband(strafeSup.getAsDouble(), Constants.Swerve.stickDeadband);
+    double rotationVal = MathUtil.applyDeadband(rotationSup.getAsDouble(), Constants.Swerve.stickDeadband);
+
+    //cube inputs to give finer control at low end.
+    translationVal = translationVal * translationVal * translationVal;
+    strafeVal = strafeVal * strafeVal * strafeVal;
+    rotationVal = rotationVal * rotationVal * rotationVal;
+
+    //limit change per input to avoid slamming the motors
+    translationVal = translationLimiter.calculate(translationVal);
+    strafeVal = strafeLimiter.calculate(strafeVal);
+    rotationVal = rotationLimiter.calculate(rotationVal);
 
     /* Drive */
     s_Swerve.drive(
         new Translation2d(translationVal, strafeVal).times(Constants.Swerve.maxSpeed),
         rotationVal * Constants.Swerve.maxAngularVelocity,
         !robotCentricSup.getAsBoolean(),
-        true);
+        false);
   }
 }
