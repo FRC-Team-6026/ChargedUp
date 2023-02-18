@@ -34,15 +34,20 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton robotCentricBumper =
       new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+  private final JoystickButton openGrabber =
+      new JoystickButton(driver, XboxController.Button.kA.value);
+  private final JoystickButton closeGrabber =
+      new JoystickButton(driver, XboxController.Button.kB.value);
   private boolean robotCentric = false;
   /* Subsystems */
-  private final Swerve s_Swerve = new Swerve();
+  private final Swerve _swerve = new Swerve();
+  private final GrabArm _grabArm = new GrabArm();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    s_Swerve.setDefaultCommand(
+    _swerve.setDefaultCommand(
         new TeleopSwerve(
-            s_Swerve,
+            _swerve,
             () -> -driver.getRawAxis(translationAxis),
             () -> -driver.getRawAxis(strafeAxis),
             () -> -driver.getRawAxis(rotationAxis),
@@ -61,11 +66,13 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     /* Driver Buttons */
-    zeroGyro.onTrue(new InstantCommand(() -> s_Swerve.zeroGyro()));
+    zeroGyro.onTrue(new InstantCommand(() -> _swerve.zeroGyro()));
     robotCentricBumper.onTrue(new InstantCommand(() -> {
       robotCentric = !robotCentric;
       SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
     }));
+    openGrabber.onTrue(new InstantCommand(() -> _grabArm.openGrabber()));
+    closeGrabber.onTrue(new InstantCommand(() -> _grabArm.closeGrabber()));
   }
 
   /**
@@ -75,6 +82,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return new ExampleAuto(s_Swerve);
+    return new ExampleAuto(_swerve);
   }
 }
