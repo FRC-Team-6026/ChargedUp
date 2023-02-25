@@ -36,9 +36,9 @@ public class DriveToTarget extends SequentialCommandGroup {
 
         var x = 0.0;
         if (position == -1) {
-            x = -0.5;
+            x = -0.75;
         } else if (position == 1) {
-            x = 0.5;
+            x = 0.75;
         }
 
         // An example trajectory to follow.  All units in meters.
@@ -46,9 +46,9 @@ public class DriveToTarget extends SequentialCommandGroup {
             // Start at the robot position relative to the target in view
             robotPose,
             // Pass through these two interior waypoints, making an 's' curve path
-            List.of(new Translation2d(x, 1)),
+            List.of(new Translation2d(x, 2.5)),
             // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(x, 0.5, Rotation2d.fromDegrees(0)),
+            new Pose2d(x, 1.5, Rotation2d.fromDegrees(0)),
             config);
 
         var thetaController = new ProfiledPIDController(
