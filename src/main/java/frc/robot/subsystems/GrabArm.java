@@ -2,8 +2,6 @@ package frc.robot.subsystems;
 
 import java.util.Hashtable;
 
-import javax.naming.LimitExceededException;
-
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
