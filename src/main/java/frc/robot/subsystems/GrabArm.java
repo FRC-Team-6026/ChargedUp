@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class GrabArm extends SubsystemBase {
-    private final Solenoid _grabberSolenoid = new Solenoid(99, PneumaticsModuleType.REVPH, 0);
+    private final Solenoid _grabberSolenoid = new Solenoid(14, PneumaticsModuleType.REVPH, 0);
     private GrabArmRotations _grabArmRotation = GrabArmRotations.Stowed;
     private GrabArmExtensions _grabArmExtension = GrabArmExtensions.Stowed;
     private final Hashtable<GrabArmRotations,GrabArmExtensions> _maxExtensions = new Hashtable<GrabArm.GrabArmRotations,GrabArm.GrabArmExtensions>();
