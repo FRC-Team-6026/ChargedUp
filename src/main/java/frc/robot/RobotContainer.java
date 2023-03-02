@@ -33,7 +33,11 @@ public class RobotContainer {
   private final JoystickButton zeroGyro =
       new JoystickButton(driver, XboxController.Button.kBack.value);
   private final JoystickButton robotCentricBumper =
+      new JoystickButton(driver, XboxController.Button.kStart.value);
+  private final JoystickButton openGrabber =
       new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+  private final JoystickButton closeGrabber =
+      new JoystickButton(driver, XboxController.Button.kRightBumper.value);
   private final JoystickButton driveToTargetCenter =
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton driveToTargetLeft =
@@ -43,6 +47,7 @@ public class RobotContainer {
   private boolean robotCentric = false;
   /* Subsystems */
   private final Swerve _swerve = new Swerve();
+  private final GrabArm _grabArm = new GrabArm();
   private final Limelight _limelight = new Limelight();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -73,6 +78,8 @@ public class RobotContainer {
       robotCentric = !robotCentric;
       SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
     }));
+    openGrabber.onTrue(new InstantCommand(() -> _grabArm.openGrabber()));
+    closeGrabber.onTrue(new InstantCommand(() -> _grabArm.closeGrabber()));
     driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
