@@ -11,7 +11,7 @@ import frc.lib.config.SwerveModuleConstants;
 public final class Constants {
 
   public static final class Swerve {
-    public static final double stickDeadband = 0.15;
+    public static final double stickDeadband = 0.05;
 
     public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
@@ -135,5 +135,36 @@ public final class Constants {
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
         new TrapezoidProfile.Constraints(
             kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
+  }
+
+  public static final class GrabArm {
+    public static final double stickDeadband = 0.05;
+    public static final double rotationGearRatio = 80;
+    public static final double rotationConversionFactor = 360.0 / rotationGearRatio;
+    public static final double extensionGearRatio = 3;
+    public static final double extensionConversionFactorInches = 0.875 * Math.PI / extensionGearRatio;
+
+    public static final int rotationContinuousCurrentLimit = 20;
+    public static final int extensionContinuousCurrentLimit = 20;
+
+    public static final boolean rotationInvert = false;
+    public static final boolean extensionInvert = true;
+    public static final IdleMode rotationNeutralMode = IdleMode.kBrake;
+    public static final IdleMode extensionNeutralMode = IdleMode.kBrake;
+
+    public static final double voltageComp = 12.0;
+
+    public static final double rotationKP = 0.005;
+    public static final double rotationKI = 0.0;
+    public static final double rotationKD = 0.0;
+    public static final double rotationKFF = 0.0;
+
+    public static final double extensionKP = 0.005;
+    public static final double extensionKI = 0.0;
+    public static final double extensionKD = 0.0;
+    public static final double extensionKFF = 0.0;
+
+    public static final double maxRotationDps = 30.0;
+    public static final double maxIps = 10.0;
   }
 }

@@ -23,11 +23,15 @@ import frc.robot.subsystems.*;
 public class RobotContainer {
   /* Controllers */
   private final XboxController driver = new XboxController(0);
+  private final XboxController operator = new XboxController(1);
 
   /* Drive Controls */
   private final int translationAxis = XboxController.Axis.kLeftY.value;
   private final int strafeAxis = XboxController.Axis.kLeftX.value;
   private final int rotationAxis = XboxController.Axis.kRightX.value;
+
+  private final int armRotationAxis = XboxController.Axis.kRightX.value;
+  private final int extensionAxis = XboxController.Axis.kLeftY.value;
 
   /* Driver Buttons */
   private final JoystickButton zeroGyro =
@@ -35,9 +39,9 @@ public class RobotContainer {
   private final JoystickButton robotCentricBumper =
       new JoystickButton(driver, XboxController.Button.kStart.value);
   private final JoystickButton openGrabber =
-      new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
+      new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
   private final JoystickButton closeGrabber =
-      new JoystickButton(driver, XboxController.Button.kRightBumper.value);
+      new JoystickButton(operator, XboxController.Button.kRightBumper.value);
   private final JoystickButton driveToTargetCenter =
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton driveToTargetLeft =
@@ -47,7 +51,7 @@ public class RobotContainer {
   private boolean robotCentric = false;
   /* Subsystems */
   private final Swerve _swerve = new Swerve();
-  private final GrabArm _grabArm = new GrabArm();
+  private final GrabArm _grabArm = new GrabArm(() -> operator.getRawAxis(armRotationAxis), () -> -operator.getRawAxis(extensionAxis));
   private final Limelight _limelight = new Limelight();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
