@@ -5,8 +5,10 @@ import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
@@ -30,11 +32,15 @@ public class GrabArm extends SubsystemBase {
     private final RelativeEncoder _extensionEncoder;
     private final SparkMaxPIDController _rotationController;
     private final SparkMaxPIDController _extensionController;
+    private final SparkMaxLimitSwitch _rotationLimitSwitch;
+    private final SparkMaxLimitSwitch _extensionLimitSwitch;
     private final Servo _ratchetServo = new Servo(9);
     private final DoubleSupplier _rotationSupplier;
     private final DoubleSupplier _extensionSupplier;
     private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(30);
     private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(10);
+    private boolean _isStationary = true;
+    private double _stationaryPosition = 0;
 
     public GrabArm(DoubleSupplier rotationSupplier, DoubleSupplier extensionSupplier) {
         super();
@@ -54,6 +60,8 @@ public class GrabArm extends SubsystemBase {
         _extensionEncoder = _extensionMotor.getEncoder();
         _rotationController = _rotationMotor.getPIDController();
         _extensionController = _extensionMotor.getPIDController();
+        _rotationLimitSwitch = _rotationMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
+        _extensionLimitSwitch = _extensionMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
 
         configRotationMotor();
         configExtensionMotor();
@@ -81,6 +89,14 @@ public class GrabArm extends SubsystemBase {
 
         SmartDashboard.putNumber("rotation angle", _rotationEncoder.getPosition());
         SmartDashboard.putNumber("extension inches", _extensionEncoder.getPosition());
+
+        if (_rotationLimitSwitch.isLimitSwitchEnabled()) {
+            _rotationEncoder.setPosition(0);
+        }
+
+        if (_extensionLimitSwitch.isLimitSwitchEnabled()) {
+            _extensionEncoder.setPosition(0);
+        }
     }
 
     public void closeGrabber() {
@@ -129,18 +145,31 @@ public class GrabArm extends SubsystemBase {
     private void manualControls() {
         var rotationRatio = MathUtil.applyDeadband(_rotationSupplier.getAsDouble(), Constants.GrabArm.stickDeadband);
         var extensionRatio = MathUtil.applyDeadband(_extensionSupplier.getAsDouble(), Constants.GrabArm.stickDeadband);
-        //var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationDps);
-        //var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIps);
-        rotationRatio = rotationRatio * rotationRatio * rotationRatio * 0.5;
-        extensionRatio = extensionRatio * extensionRatio * extensionRatio * 0.5;      
+        //cubing inputs to give better control over the low range.
+        rotationRatio = rotationRatio * rotationRatio * rotationRatio;
+        extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
+        var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationDps);
+        var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIps);
         if (extensionRatio > 0) {
             _ratchetServo.setAngle(80);
         } else {
             _ratchetServo.setAngle(0);
         }
 
-        _rotationController.setReference(rotationRatio, ControlType.kDutyCycle);
-        _extensionController.setReference(extensionRatio, ControlType.kDutyCycle);
+        //set the stationary position when the arm comes to a stop.
+        if (rotationRatio == 0 && !_isStationary) {
+            _isStationary = true;
+            _stationaryPosition = _rotationEncoder.getPosition();
+        }
+
+        if (!_isStationary) {
+            _rotationController.setReference(rotationSpeedDps, ControlType.kVelocity);
+        } else {
+            //if the arm is stationary set the reference to position so that the arm doesn't drift over time
+            _rotationController.setReference(_stationaryPosition, ControlType.kPosition);
+        }
+
+        _extensionController.setReference(extensionIps, ControlType.kVelocity);
     }
 
     private void configRotationMotor() {
@@ -149,11 +178,13 @@ public class GrabArm extends SubsystemBase {
         _rotationMotor.setInverted(Constants.GrabArm.rotationInvert);
         _rotationMotor.setIdleMode(Constants.GrabArm.rotationNeutralMode);
         _rotationEncoder.setPositionConversionFactor(Constants.GrabArm.rotationConversionFactor);
+        _rotationEncoder.setVelocityConversionFactor(Constants.GrabArm.rotationVelocityConversionFactorDps);
         _rotationController.setP(Constants.GrabArm.rotationKP);
         _rotationController.setI(Constants.GrabArm.rotationKI);
         _rotationController.setD(Constants.GrabArm.rotationKD);
         _rotationController.setFF(Constants.GrabArm.rotationKFF);
         _rotationMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
+        _rotationMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.rotationForwardSoftLimitDegrees);
         _rotationMotor.burnFlash();
     }
 
@@ -163,11 +194,13 @@ public class GrabArm extends SubsystemBase {
         _extensionMotor.setInverted(Constants.GrabArm.extensionInvert);
         _extensionMotor.setIdleMode(Constants.GrabArm.extensionNeutralMode);
         _extensionEncoder.setPositionConversionFactor(Constants.GrabArm.extensionConversionFactorInches);
+        _extensionEncoder.setVelocityConversionFactor(Constants.GrabArm.extensionVelocityConversionFactorIps);
         _extensionController.setP(Constants.GrabArm.extensionKP);
         _extensionController.setI(Constants.GrabArm.extensionKI);
         _extensionController.setD(Constants.GrabArm.extensionKD);
         _extensionController.setFF(Constants.GrabArm.extensionKFF);
         _extensionMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
+        _extensionMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.extensionForwardSoftLimitInches);
         _extensionMotor.burnFlash();
     }
 
