@@ -156,20 +156,22 @@ public final class Constants {
 
     public static final double voltageComp = 12.0;
 
-    public static final double rotationKP = 0.005;
+    public static final double rotationKP = 0.1;
     public static final double rotationKI = 0.0;
     public static final double rotationKD = 0.0;
     public static final double rotationKFF = 0.0;
 
-    public static final double extensionKP = 0.005;
+    public static final double extensionKP = 0.1;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
 
-    public static final double maxRotationDps = 30.0;
+    public static final double maxRotationDps = 60.0;
+    public static final double maxRotationAccDps = 40.0;
     public static final double maxIps = 10.0;
+    public static final double maxAccIps = 8.0;
 
-    public static final float rotationForwardSoftLimitDegrees = 210;
+    public static final float rotationForwardSoftLimitDegrees = 200;
     public static final float extensionForwardSoftLimitInches = 24;
   }
 }

@@ -10,6 +10,7 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -37,8 +38,8 @@ public class GrabArm extends SubsystemBase {
     private final Servo _ratchetServo = new Servo(9);
     private final DoubleSupplier _rotationSupplier;
     private final DoubleSupplier _extensionSupplier;
-    private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(30);
-    private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(10);
+    private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(Constants.GrabArm.maxRotationAccDps);
+    private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(Constants.GrabArm.maxIps);
     private boolean _isStationary = true;
     private double _stationaryPosition = 0;
 
@@ -60,8 +61,8 @@ public class GrabArm extends SubsystemBase {
         _extensionEncoder = _extensionMotor.getEncoder();
         _rotationController = _rotationMotor.getPIDController();
         _extensionController = _extensionMotor.getPIDController();
-        _rotationLimitSwitch = _rotationMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
-        _extensionLimitSwitch = _extensionMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyClosed);
+        _rotationLimitSwitch = _rotationMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
+        _extensionLimitSwitch = _extensionMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
 
         configRotationMotor();
         configExtensionMotor();
@@ -90,11 +91,16 @@ public class GrabArm extends SubsystemBase {
         SmartDashboard.putNumber("rotation angle", _rotationEncoder.getPosition());
         SmartDashboard.putNumber("extension inches", _extensionEncoder.getPosition());
 
-        if (_rotationLimitSwitch.isLimitSwitchEnabled()) {
+        SmartDashboard.putBoolean("rotationswitchenable", _rotationLimitSwitch.isLimitSwitchEnabled());
+        SmartDashboard.putBoolean("rotationswitchstatus", _rotationLimitSwitch.isPressed());
+        SmartDashboard.putBoolean("extensionswitchenable", _extensionLimitSwitch.isLimitSwitchEnabled());
+        SmartDashboard.putBoolean("extensionswitchstatus", _extensionLimitSwitch.isPressed());
+
+        if (_rotationLimitSwitch.isPressed()) {
             _rotationEncoder.setPosition(0);
         }
 
-        if (_extensionLimitSwitch.isLimitSwitchEnabled()) {
+        if (_extensionLimitSwitch.isPressed()) {
             _extensionEncoder.setPosition(0);
         }
     }
@@ -150,19 +156,28 @@ public class GrabArm extends SubsystemBase {
         extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
         var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationDps);
         var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIps);
-        if (extensionRatio > 0) {
+        if (extensionRatio != 0) {
             _ratchetServo.setAngle(80);
         } else {
-            _ratchetServo.setAngle(0);
+            _ratchetServo.setAngle(25);
         }
 
         //set the stationary position when the arm comes to a stop.
         if (rotationRatio == 0 && !_isStationary) {
             _isStationary = true;
             _stationaryPosition = _rotationEncoder.getPosition();
+        } else if (rotationRatio != 0) {
+            _isStationary=false;
         }
 
-        if (!_isStationary) {
+        if (!_isStationary && rotationRatio > 0) {
+            double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
+            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.toRadians(_rotationEncoder.getPosition()-39)));
+            double newtonMeterTorque = inLbTorque / 8.8507457673787;
+            double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
+            double compensation = motorOutput / 2.6;
+            _rotationController.setReference(rotationSpeedDps, ControlType.kVelocity,0,compensation,ArbFFUnits.kPercentOut);
+        } else if (rotationRatio < 0) {
             _rotationController.setReference(rotationSpeedDps, ControlType.kVelocity);
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
