@@ -141,8 +141,10 @@ public final class Constants {
     public static final double stickDeadband = 0.05;
     public static final double rotationGearRatio = 80;
     public static final double rotationConversionFactor = 360.0 / rotationGearRatio;
+    public static final double rotationVelocityConversionFactorDps = rotationConversionFactor / 60.0;
     public static final double extensionGearRatio = 3;
     public static final double extensionConversionFactorInches = 0.875 * Math.PI / extensionGearRatio;
+    public static final double extensionVelocityConversionFactorIps = extensionConversionFactorInches / 60.0;
 
     public static final int rotationContinuousCurrentLimit = 20;
     public static final int extensionContinuousCurrentLimit = 20;
@@ -154,17 +156,22 @@ public final class Constants {
 
     public static final double voltageComp = 12.0;
 
-    public static final double rotationKP = 0.005;
+    public static final double rotationKP = 0.1;
     public static final double rotationKI = 0.0;
     public static final double rotationKD = 0.0;
     public static final double rotationKFF = 0.0;
 
-    public static final double extensionKP = 0.005;
+    public static final double extensionKP = 0.1;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
 
-    public static final double maxRotationDps = 30.0;
+    public static final double maxRotationDps = 60.0;
+    public static final double maxRotationAccDps = 40.0;
     public static final double maxIps = 10.0;
+    public static final double maxAccIps = 8.0;
+
+    public static final float rotationForwardSoftLimitDegrees = 200;
+    public static final float extensionForwardSoftLimitInches = 24;
   }
 }
