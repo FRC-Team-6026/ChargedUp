@@ -170,13 +170,13 @@ public class GrabArm extends SubsystemBase {
         }
 
         if (!_isStationary) {
-            _rotationController.setReference(rotationSpeedDps, ControlType.kPosition);
+            _rotationController.setReference(rotationSpeedDps + _rotationEncoder.getPosition(), ControlType.kPosition);
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             _rotationController.setReference(_stationaryPosition, ControlType.kPosition);
         }
 
-        _extensionController.setReference(extensionIps, ControlType.kPosition);
+        _extensionController.setReference(extensionIps + _extensionEncoder.getPosition(), ControlType.kPosition);
     }
 
     private void configRotationMotor() {
