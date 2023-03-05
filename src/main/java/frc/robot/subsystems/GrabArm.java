@@ -10,7 +10,6 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -154,12 +153,12 @@ public class GrabArm extends SubsystemBase {
         //cubing inputs to give better control over the low range.
         rotationRatio = rotationRatio * rotationRatio * rotationRatio;
         extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
-        var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationDps);
-        var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIps);
+        var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationHz);
+        var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIpsHz);
         if (extensionRatio != 0) {
             _ratchetServo.setAngle(80);
         } else {
-            _ratchetServo.setAngle(25);
+            _ratchetServo.setAngle(30);
         }
 
         //set the stationary position when the arm comes to a stop.
@@ -170,21 +169,14 @@ public class GrabArm extends SubsystemBase {
             _isStationary=false;
         }
 
-        if (!_isStationary && rotationRatio > 0) {
-            double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
-            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.toRadians(_rotationEncoder.getPosition()-39)));
-            double newtonMeterTorque = inLbTorque / 8.8507457673787;
-            double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
-            double compensation = motorOutput / 2.6;
-            _rotationController.setReference(rotationSpeedDps, ControlType.kVelocity,0,compensation,ArbFFUnits.kPercentOut);
-        } else if (rotationRatio < 0) {
-            _rotationController.setReference(rotationSpeedDps, ControlType.kVelocity);
+        if (!_isStationary) {
+            _rotationController.setReference(rotationSpeedDps, ControlType.kPosition);
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             _rotationController.setReference(_stationaryPosition, ControlType.kPosition);
         }
 
-        _extensionController.setReference(extensionIps, ControlType.kVelocity);
+        _extensionController.setReference(extensionIps, ControlType.kPosition);
     }
 
     private void configRotationMotor() {

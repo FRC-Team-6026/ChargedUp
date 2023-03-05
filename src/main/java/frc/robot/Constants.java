@@ -169,7 +169,7 @@ public final class Constants {
     public static final double maxRotationDps = 60.0;
     public static final double maxRotationAccDps = 40.0;
     public static final double maxRotationHz = maxRotationDps / 50;
-    public static final double maxRotationAccHz = maxRotationAccDps / 50;
+    public static final double maxRotationAccDpsHz = maxRotationAccDps / 50;
     public static final double maxIps = 10.0;
     public static final double maxAccIps = 8.0;
     public static final double maxIpsHz = maxIps / 50;
