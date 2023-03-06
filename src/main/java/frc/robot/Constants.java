@@ -158,16 +158,16 @@ public final class Constants {
 
     public static final double rotationKP = 0.1;
     public static final double rotationKI = 0.0;
-    public static final double rotationKD = 0.0;
+    public static final double rotationKD = 0.025;
     public static final double rotationKFF = 0.0;
 
-    public static final double extensionKP = 0.1;
-    public static final double extensionKI = 0.0;
-    public static final double extensionKD = 0.0;
+    public static final double extensionKP = 0.2;
+    public static final double extensionKI = 0.05;
+    public static final double extensionKD = 0.01;
     public static final double extensionKFF = 0.0;
 
-    public static final double maxRotationDps = 60.0;
-    public static final double maxRotationAccDps = 40.0;
+    public static final double maxRotationDps = 40.0;
+    public static final double maxRotationAccDps = 30.0;
     public static final double maxRotationHz = maxRotationDps / 50;
     public static final double maxRotationAccDpsHz = maxRotationAccDps / 50;
     public static final double maxIps = 10.0;
@@ -175,7 +175,7 @@ public final class Constants {
     public static final double maxIpsHz = maxIps / 50;
     public static final double maxAccIpsHz = maxAccIps / 50;
 
-    public static final float rotationForwardSoftLimitDegrees = 200;
+    public static final float rotationForwardSoftLimitDegrees = 195;
     public static final float extensionForwardSoftLimitInches = 24;
   }
 }

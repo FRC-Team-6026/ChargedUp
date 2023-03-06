@@ -10,6 +10,7 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -41,6 +42,10 @@ public class GrabArm extends SubsystemBase {
     private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(Constants.GrabArm.maxIps);
     private boolean _isStationary = true;
     private double _stationaryPosition = 0;
+    private double _targettedRotation = 0;
+    private double _targettedExtension = 0;
+    private double _compensationRotation = 0;
+    private double _compensationExtension = .1;
 
     public GrabArm(DoubleSupplier rotationSupplier, DoubleSupplier extensionSupplier) {
         super();
@@ -170,13 +175,27 @@ public class GrabArm extends SubsystemBase {
         }
 
         if (!_isStationary) {
-            _rotationController.setReference(rotationSpeedDps + _rotationEncoder.getPosition(), ControlType.kPosition);
+            double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
+            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.abs(Math.toRadians(_rotationEncoder.getPosition()-39))));
+            double newtonMeterTorque = inLbTorque / 8.8507457673787;
+            double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
+            _compensationRotation = motorOutput / 2.6;
+            _targettedRotation = _targettedRotation + rotationSpeedDps;
+            if(_targettedRotation > Constants.GrabArm.rotationForwardSoftLimitDegrees){
+                _targettedRotation = Constants.GrabArm.rotationForwardSoftLimitDegrees;
+            }
+            SmartDashboard.putNumber("targetPosition", _targettedRotation);
+            _rotationController.setReference(_targettedRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
-            _rotationController.setReference(_stationaryPosition, ControlType.kPosition);
+            _rotationController.setReference(_stationaryPosition, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
         }
-
-        _extensionController.setReference(extensionIps + _extensionEncoder.getPosition(), ControlType.kPosition);
+        _targettedExtension = _targettedExtension + extensionIps;
+        if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
+            _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
+        }
+        SmartDashboard.putNumber("targetExtension", _targettedExtension);
+        _extensionController.setReference(_targettedExtension, ControlType.kPosition);
     }
 
     private void configRotationMotor() {
