@@ -239,7 +239,7 @@ public class GrabArm extends SubsystemBase {
             _tempStateExtension = new TrapezoidProfile.State(_targettedExtension,0);
             _profileExtension = new TrapezoidProfile(_extensionTrapProfileConstraints, _tempStateExtension, _prevStateExtension);
             var setpoint = _profileExtension.calculate(Constants.GrabArm.codeExecutionRateTime);
-            SmartDashboard.putNumber("targetInches", _targettedExtension);
+            SmartDashboard.putNumber("targetExtension", _targettedExtension);
             _extensionController.setReference(setpoint.position, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
             _prevStateExtension = _tempStateExtension;
             
