@@ -14,6 +14,7 @@ import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -40,8 +41,15 @@ public class GrabArm extends SubsystemBase {
     private final DoubleSupplier _extensionSupplier;
     private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(Constants.GrabArm.maxRotationAccDps);
     private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(Constants.GrabArm.maxIps);
+    private final TrapezoidProfile.Constraints _rotationTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxRotationDps, Constants.GrabArm.maxRotationAccDps);
+
+    private TrapezoidProfile _profile;
+    private TrapezoidProfile.State _prevState = new TrapezoidProfile.State(0,0);
+    private TrapezoidProfile.State _tempState;
+
     private boolean _isStationary = true;
     private double _stationaryPosition = 0;
+    private double _stationaryExtension = 0;
     private double _targettedRotation = 0;
     private double _targettedExtension = 0;
     private double _compensationRotation = 0;
@@ -70,6 +78,10 @@ public class GrabArm extends SubsystemBase {
 
         configRotationMotor();
         configExtensionMotor();
+
+        _stationaryPosition = _rotationEncoder.getPosition();
+        _targettedRotation = _rotationEncoder.getPosition();
+        _targettedExtension = _extensionEncoder.getPosition();
 
         this.setDefaultCommand(new FunctionalCommand(() -> {/*do nothing on init*/},
             // do arcade drive by default
@@ -175,21 +187,33 @@ public class GrabArm extends SubsystemBase {
         }
 
         if (!_isStationary) {
+            //Comensation Calculations
             double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
             double inLbTorque = (10 * centerOfGrav * Math.cos(Math.abs(Math.toRadians(_rotationEncoder.getPosition()-39))));
             double newtonMeterTorque = inLbTorque / 8.8507457673787;
             double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
             _compensationRotation = motorOutput / 2.6;
+
+            //Rotation Targetting
             _targettedRotation = _targettedRotation + rotationSpeedDps;
             if(_targettedRotation > Constants.GrabArm.rotationForwardSoftLimitDegrees){
                 _targettedRotation = Constants.GrabArm.rotationForwardSoftLimitDegrees;
             }
+
+            //Trapazoidal Profiling
+            _tempState = new TrapezoidProfile.State(_targettedRotation,0);
+            _profile = new TrapezoidProfile(_rotationTrapProfileConstraints, _tempState, _prevState);
+            var setpoint = _profile.calculate(Constants.GrabArm.codeExecutionRateTime);
             SmartDashboard.putNumber("targetPosition", _targettedRotation);
-            _rotationController.setReference(_targettedRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(setpoint.position, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
+            _prevState = _tempState;
+            
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             _rotationController.setReference(_stationaryPosition, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
         }
+
+        //Extention Targetting
         _targettedExtension = _targettedExtension + extensionIps;
         if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
             _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
