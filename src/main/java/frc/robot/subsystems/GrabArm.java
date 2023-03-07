@@ -41,14 +41,20 @@ public class GrabArm extends SubsystemBase {
     private final DoubleSupplier _extensionSupplier;
     private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(Constants.GrabArm.maxRotationAccDps);
     private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(Constants.GrabArm.maxIps);
+
     private final TrapezoidProfile.Constraints _rotationTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxRotationDps, Constants.GrabArm.maxRotationAccDps);
+    private final TrapezoidProfile.Constraints _extensionTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxIps, Constants.GrabArm.maxIpsAcc);
 
-    private TrapezoidProfile _profile;
-    private TrapezoidProfile.State _prevState = new TrapezoidProfile.State(0,0);
-    private TrapezoidProfile.State _tempState;
+    private TrapezoidProfile _profileRotation;
+    private TrapezoidProfile.State _prevStateRotation = new TrapezoidProfile.State(0,0);
+    private TrapezoidProfile.State _tempStateRotation;
+    private TrapezoidProfile _profileExtension;
+    private TrapezoidProfile.State _prevStateExtension = new TrapezoidProfile.State(0,0);
+    private TrapezoidProfile.State _tempStateExtension;
 
-    private boolean _isStationary = true;
-    private double _stationaryPosition = 0;
+    private boolean _isStationaryRotation = true;
+    private boolean _isStationaryExtension = true;
+    private double _stationaryRotation = 0;
     private double _stationaryExtension = 0;
     private double _targettedRotation = 0;
     private double _targettedExtension = 0;
@@ -79,8 +85,9 @@ public class GrabArm extends SubsystemBase {
         configRotationMotor();
         configExtensionMotor();
 
-        _stationaryPosition = _rotationEncoder.getPosition();
+        _stationaryRotation = _rotationEncoder.getPosition();
         _targettedRotation = _rotationEncoder.getPosition();
+        _stationaryExtension = _rotationEncoder.getPosition();
         _targettedExtension = _extensionEncoder.getPosition();
 
         this.setDefaultCommand(new FunctionalCommand(() -> {/*do nothing on init*/},
@@ -178,15 +185,15 @@ public class GrabArm extends SubsystemBase {
             _ratchetServo.setAngle(30);
         }
 
-        //set the stationary position when the arm comes to a stop.
-        if (rotationRatio == 0 && !_isStationary) {
-            _isStationary = true;
-            _stationaryPosition = _rotationEncoder.getPosition();
+        //set the stationary rotation when the arm comes to a stop.
+        if (rotationRatio == 0 && !_isStationaryRotation) {
+            _isStationaryRotation = true;
+            _stationaryRotation = _rotationEncoder.getPosition();
         } else if (rotationRatio != 0) {
-            _isStationary=false;
+            _isStationaryRotation=false;
         }
 
-        if (!_isStationary) {
+        if (!_isStationaryRotation) {
             //Comensation Calculations
             double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
             double inLbTorque = (10 * centerOfGrav * Math.cos(Math.abs(Math.toRadians(_rotationEncoder.getPosition()-39))));
@@ -201,25 +208,45 @@ public class GrabArm extends SubsystemBase {
             }
 
             //Trapazoidal Profiling
-            _tempState = new TrapezoidProfile.State(_targettedRotation,0);
-            _profile = new TrapezoidProfile(_rotationTrapProfileConstraints, _tempState, _prevState);
-            var setpoint = _profile.calculate(Constants.GrabArm.codeExecutionRateTime);
-            SmartDashboard.putNumber("targetPosition", _targettedRotation);
+            _tempStateRotation = new TrapezoidProfile.State(_targettedRotation,0);
+            _profileRotation = new TrapezoidProfile(_rotationTrapProfileConstraints, _tempStateRotation, _prevStateRotation);
+            var setpoint = _profileRotation.calculate(Constants.GrabArm.codeExecutionRateTime);
+            SmartDashboard.putNumber("targetRotation", _targettedRotation);
             _rotationController.setReference(setpoint.position, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
-            _prevState = _tempState;
+            _prevStateRotation = _tempStateRotation;
             
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
-            _rotationController.setReference(_stationaryPosition, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(_stationaryRotation, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
         }
 
-        //Extention Targetting
-        _targettedExtension = _targettedExtension + extensionIps;
-        if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
-            _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
+        //set the stationary inches when the extension comes to a stop.
+        if (extensionRatio == 0 && !_isStationaryExtension) {
+            _isStationaryExtension = true;
+            _stationaryExtension = _rotationEncoder.getPosition();
+        } else if (rotationRatio != 0) {
+            _isStationaryRotation=false;
+        }    
+
+        if (!_isStationaryExtension) {
+            //Extension Targetting
+            _targettedExtension = _targettedExtension + extensionIps;
+            if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
+                _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
+            }
+
+            //Trapazoidal Profiling
+            _tempStateExtension = new TrapezoidProfile.State(_targettedExtension,0);
+            _profileExtension = new TrapezoidProfile(_extensionTrapProfileConstraints, _tempStateExtension, _prevStateExtension);
+            var setpoint = _profileExtension.calculate(Constants.GrabArm.codeExecutionRateTime);
+            SmartDashboard.putNumber("targetInches", _targettedExtension);
+            _extensionController.setReference(setpoint.position, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _prevStateExtension = _tempStateExtension;
+            
+        } else {
+            //if the arm is stationary set the reference to position so that the arm doesn't drift over time
+            _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
         }
-        SmartDashboard.putNumber("targetExtension", _targettedExtension);
-        _extensionController.setReference(_targettedExtension, ControlType.kPosition);
     }
 
     private void configRotationMotor() {
