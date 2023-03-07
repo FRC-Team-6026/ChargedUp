@@ -189,6 +189,7 @@ public class GrabArm extends SubsystemBase {
         if (rotationRatio == 0 && !_isStationaryRotation) {
             _isStationaryRotation = true;
             _stationaryRotation = _rotationEncoder.getPosition();
+            _targettedRotation = _stationaryRotation;
         } else if (rotationRatio != 0) {
             _isStationaryRotation=false;
         }
@@ -224,6 +225,7 @@ public class GrabArm extends SubsystemBase {
         if (extensionRatio == 0 && !_isStationaryExtension) {
             _isStationaryExtension = true;
             _stationaryExtension = _rotationEncoder.getPosition();
+            _targettedExtension = _stationaryExtension;
         } else if (rotationRatio != 0) {
             _isStationaryRotation=false;
         }    
