@@ -10,10 +10,10 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -38,16 +38,6 @@ public class GrabArm extends SubsystemBase {
     private final Servo _ratchetServo = new Servo(9);
     private final DoubleSupplier _rotationSupplier;
     private final DoubleSupplier _extensionSupplier;
-
-    private final TrapezoidProfile.Constraints _rotationTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxRotationDps, Constants.GrabArm.maxRotationAccDps);
-    private final TrapezoidProfile.Constraints _extensionTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxIps, Constants.GrabArm.maxIpsAcc);
-
-    private TrapezoidProfile _profileRotation;
-    private TrapezoidProfile.State _prevStateRotation = new TrapezoidProfile.State(0,0);
-    private TrapezoidProfile.State _tempStateRotation;
-    private TrapezoidProfile _profileExtension;
-    private TrapezoidProfile.State _prevStateExtension = new TrapezoidProfile.State(0,0);
-    private TrapezoidProfile.State _tempStateExtension;
 
     private boolean _isStationaryRotation = true;
     private boolean _isStationaryExtension = true;
@@ -205,13 +195,9 @@ public class GrabArm extends SubsystemBase {
                 _targettedRotation = Constants.GrabArm.rotationForwardSoftLimitDegrees;
             }
 
-            //Trapazoidal Profiling
-            _tempStateRotation = new TrapezoidProfile.State(_targettedRotation,0);
-            _profileRotation = new TrapezoidProfile(_rotationTrapProfileConstraints, _tempStateRotation, _prevStateRotation);
-            var setpoint = _profileRotation.calculate(Constants.GrabArm.codeExecutionRateTime);
+            //Position Setting
             SmartDashboard.putNumber("targetRotation", _targettedRotation);
-            _rotationController.setReference(setpoint.position, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
-            _prevStateRotation = _tempStateRotation;
+            _rotationController.setReference(_targettedRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
             
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
@@ -233,14 +219,10 @@ public class GrabArm extends SubsystemBase {
             if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
                 _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
             }
-
-            //Trapazoidal Profiling
-            _tempStateExtension = new TrapezoidProfile.State(_targettedExtension,0);
-            _profileExtension = new TrapezoidProfile(_extensionTrapProfileConstraints, _tempStateExtension, _prevStateExtension);
-            var setpoint = _profileExtension.calculate(Constants.GrabArm.codeExecutionRateTime);
+            
+            //Extension setting
             SmartDashboard.putNumber("targetExtension", _targettedExtension);
-            _extensionController.setReference(setpoint.position, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
-            _prevStateExtension = _tempStateExtension;
+            _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
             
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
@@ -261,6 +243,9 @@ public class GrabArm extends SubsystemBase {
         _rotationController.setFF(Constants.GrabArm.rotationKFF);
         _rotationMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _rotationMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.rotationForwardSoftLimitDegrees);
+        _rotationController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+        _rotationController.setSmartMotionMaxAccel(Constants.GrabArm.maxRotationAccDps, 0);
+        _rotationController.setSmartMotionMaxVelocity(Constants.GrabArm.maxRotationDps, 0);
         _rotationMotor.burnFlash();
     }
 
@@ -277,6 +262,9 @@ public class GrabArm extends SubsystemBase {
         _extensionController.setFF(Constants.GrabArm.extensionKFF);
         _extensionMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _extensionMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.extensionForwardSoftLimitInches);
+        _extensionController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+        _extensionController.setSmartMotionMaxAccel(Constants.GrabArm.maxIpsAcc, 0);
+        _extensionController.setSmartMotionMaxVelocity(Constants.GrabArm.maxIps, 0);
         _extensionMotor.burnFlash();
     }
 
