@@ -13,7 +13,6 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Servo;
@@ -39,8 +38,6 @@ public class GrabArm extends SubsystemBase {
     private final Servo _ratchetServo = new Servo(9);
     private final DoubleSupplier _rotationSupplier;
     private final DoubleSupplier _extensionSupplier;
-    private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(Constants.GrabArm.maxRotationAccDps);
-    private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(Constants.GrabArm.maxIps);
 
     private final TrapezoidProfile.Constraints _rotationTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxRotationDps, Constants.GrabArm.maxRotationAccDps);
     private final TrapezoidProfile.Constraints _extensionTrapProfileConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxIps, Constants.GrabArm.maxIpsAcc);
@@ -177,8 +174,8 @@ public class GrabArm extends SubsystemBase {
         //cubing inputs to give better control over the low range.
         rotationRatio = rotationRatio * rotationRatio * rotationRatio;
         extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
-        var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationHz);
-        var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIpsHz);
+        var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationHz;
+        var extensionIps = extensionRatio * Constants.GrabArm.maxIpsHz;
         if (extensionRatio != 0) {
             _ratchetServo.setAngle(80);
         } else {
