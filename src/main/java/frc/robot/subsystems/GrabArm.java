@@ -209,8 +209,8 @@ public class GrabArm extends SubsystemBase {
             _isStationaryExtension = true;
             _stationaryExtension = _rotationEncoder.getPosition();
             _targettedExtension = _stationaryExtension;
-        } else if (rotationRatio != 0) {
-            _isStationaryRotation=false;
+        } else if (extensionRatio != 0) {
+            _isStationaryExtension=false;
         }    
 
         if (!_isStationaryExtension) {
