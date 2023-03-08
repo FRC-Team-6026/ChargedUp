@@ -18,6 +18,9 @@ import frc.robot.Constants;
 public class Swerve extends SubsystemBase {
   private final AHRS gyro;
 
+  private boolean isTargetting = false;
+  private Limelight limeguy;
+
   private SwerveDriveOdometry swerveOdometry;
   private SwerveModule[] mSwerveMods;
 
@@ -43,20 +46,37 @@ public class Swerve extends SubsystemBase {
 
   public void drive(
       Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
-    SwerveModuleState[] swerveModuleStates =
+    if(!isTargetting) //Normal Driving, Driver Controlled and takes into account field Relations -> Original Fucntionality
+    {
+        SwerveModuleState[] swerveModuleStates =
         Constants.Swerve.swerveKinematics.toSwerveModuleStates(
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     translation.getX(), translation.getY(), rotation, getYaw())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
-
+    
     for (SwerveModule mod : mSwerveMods) {
       mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
       var modState = swerveModuleStates[mod.moduleNumber];
       SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired angle: ", modState.angle.getDegrees());
       SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired velocity: ", modState.speedMetersPerSecond);
     }
+  } 
+  else if (isTargetting) //Targetted Driving, intention is to line up robot at the same angle as the April Tags so that they the camera's view is perpindicular -> Placing Cones and/or Loading Station
+  {
+      Pose2d rotationFromTag = limeguy.getRobotPoseInTargetSpace();
+      SwerveModuleState[] swerveModuleStates =
+      Constants.Swerve.swerveKinematics.toSwerveModuleStates(new ChassisSpeeds(translation.getX(), translation.getY(), rotationFromTag.getRotation().getDegrees()));
+  SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
+  
+  for (SwerveModule mod : mSwerveMods) {
+    mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
+    var modState = swerveModuleStates[mod.moduleNumber];
+    SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired angle: ", modState.angle.getDegrees());
+    SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired velocity: ", modState.speedMetersPerSecond);
+  }
+  }
   }
 
   /* Used by SwerveControllerCommand in Auto */
@@ -100,6 +120,10 @@ public class Swerve extends SubsystemBase {
     return (Constants.Swerve.invertGyro)
         ? Rotation2d.fromDegrees(360 - gyro.getYaw())
         : Rotation2d.fromDegrees(gyro.getYaw());
+  }
+
+  public void targettingModeToggle() {
+      isTargetting = !isTargetting;
   }
 
   @Override
