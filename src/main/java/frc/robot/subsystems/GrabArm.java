@@ -184,7 +184,7 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryRotation) {
             //Comensation Calculations
             double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
-            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.abs(Math.toRadians(_rotationEncoder.getPosition()-39))));
+            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.toRadians(_rotationEncoder.getPosition()-39)));
             double newtonMeterTorque = inLbTorque / 8.8507457673787;
             double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
             _compensationRotation = motorOutput / 2.6;
@@ -201,7 +201,7 @@ public class GrabArm extends SubsystemBase {
             
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
-            _rotationController.setReference(_stationaryRotation, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(_stationaryRotation, ControlType.kPosition,0, _compensationRotation, ArbFFUnits.kPercentOut);
         }
 
         //set the stationary inches when the extension comes to a stop.
