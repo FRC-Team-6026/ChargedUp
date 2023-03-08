@@ -13,10 +13,14 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Limelight;
 import java.util.List;
 
 public class ExampleAuto extends SequentialCommandGroup {
   public ExampleAuto(Swerve s_Swerve) {
+    Limelight limeLight = new Limelight();
+    double Id = limeLight.getTagId();
+
     TrajectoryConfig config =
         new TrajectoryConfig(
                 Constants.AutoConstants.kMaxSpeedMetersPerSecond,
