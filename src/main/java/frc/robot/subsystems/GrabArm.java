@@ -167,7 +167,7 @@ public class GrabArm extends SubsystemBase {
         var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationHz;
         var extensionIps = extensionRatio * Constants.GrabArm.maxIpsHz;
         if (extensionRatio != 0) {
-            _ratchetServo.setAngle(80);
+            _ratchetServo.setAngle(90);
         } else {
             _ratchetServo.setAngle(30);
         }
@@ -220,7 +220,7 @@ public class GrabArm extends SubsystemBase {
                 _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
             }
             
-            //Extension setting
+            //Extension Setting
             SmartDashboard.putNumber("targetExtension", _targettedExtension);
             _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
             
