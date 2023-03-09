@@ -166,6 +166,9 @@ public class GrabArm extends SubsystemBase {
         extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
         var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationHz;
         var extensionIps = extensionRatio * Constants.GrabArm.maxIpsHz;
+
+        double extensionheight = (_extensionEncoder.getPosition() + Constants.GrabArm.baseArmLength) * Math.sin(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees);
+
         if (extensionRatio != 0) {
             _ratchetServo.setAngle(90);
         } else {
@@ -194,6 +197,9 @@ public class GrabArm extends SubsystemBase {
             if(_targettedRotation > Constants.GrabArm.rotationForwardSoftLimitDegrees){
                 _targettedRotation = Constants.GrabArm.rotationForwardSoftLimitDegrees;
             }
+            if(_extensionEncoder.getPosition() > 15.0){
+                _stationaryExtension = 15.0;
+            }
 
             //Position Setting
             SmartDashboard.putNumber("targetRotation", _targettedRotation);
@@ -216,8 +222,8 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension) {
             //Compensation Calculations
             double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-            double inLdTorque = (8 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            double newtonMeterTorque = inLdTorque / 8.8507457673787;
+            double inLbTorque = (8 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            double newtonMeterTorque = inLbTorque / 8.8507457673787;
             double motorOutput = newtonMeterTorque / Constants.GrabArm.extensionGearRatio;
             _compensationExtension = motorOutput / 0.97; // output / stall torque
 
@@ -229,8 +235,10 @@ public class GrabArm extends SubsystemBase {
             
             //Extension Setting
             SmartDashboard.putNumber("targetExtension", _targettedExtension);
+            if(extensionRatio > 0) {
+                _compensationExtension = 0;
+            }
             _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
-            
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
