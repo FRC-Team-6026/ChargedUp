@@ -28,8 +28,10 @@ public class ExampleAuto extends SequentialCommandGroup {
             .setKinematics(Constants.Swerve.swerveKinematics);
     if(Id == 1 || Id == 2 || Id == 3) //Red Side of the Field, 1 being the farthest from the loading station
     {
+        Pose2d startingPoseProOffset = limeLight.getRobotPoseInTargetSpace();
+        startingPoseProOffset = new Pose2d(-startingPoseProOffset.getX(), -startingPoseProOffset.getY(), startingPoseProOffset.getRotation());
         if(Id == 1){
-
+            
         }
         else if (Id == 2){
 
@@ -40,6 +42,10 @@ public class ExampleAuto extends SequentialCommandGroup {
     } 
     else if (Id == 8 || Id == 7 || Id == 6) //Blue Side of the Field, 8 being the farthest from the loading station
     {
+        Pose2d startingPosePreOffset = limeLight.getRobotPoseInTargetSpace();
+        Rotation2d invertRotation = startingPosePreOffset.getRotation();
+        invertRotation = Rotation2d.fromDegrees(-invertRotation.getDegrees());
+        startingPosePreOffset = new Pose2d(startingPosePreOffset.getX(), startingPosePreOffset.getY(), invertRotation);
         if (Id == 8){
 
         }
