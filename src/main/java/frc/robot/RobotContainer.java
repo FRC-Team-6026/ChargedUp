@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.Hashtable;
+
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,6 +13,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.autos.*;
+import frc.robot.autos.idProfiles.Id1;
+import frc.robot.autos.idProfiles.Id2;
+import frc.robot.autos.idProfiles.Id3;
+import frc.robot.autos.idProfiles.Id6;
+import frc.robot.autos.idProfiles.Id7;
+import frc.robot.autos.idProfiles.Id8;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 
@@ -32,6 +40,9 @@ public class RobotContainer {
 
   private final int armRotationAxis = XboxController.Axis.kRightX.value;
   private final int extensionAxis = XboxController.Axis.kLeftY.value;
+
+  //Auto tagId Variables
+  private final Hashtable<Integer,Command> idCommands = new Hashtable<Integer,Command>();
 
   /* Driver Buttons */
   private final JoystickButton zeroGyro =
@@ -56,17 +67,25 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    _swerve.setDefaultCommand(
-        new TeleopSwerve(
-            _swerve,
-            () -> -driver.getRawAxis(translationAxis),
-            () -> -driver.getRawAxis(strafeAxis),
-            () -> -driver.getRawAxis(rotationAxis),
-            () -> robotCentric));
+      _swerve.setDefaultCommand(
+          new TeleopSwerve(
+              _swerve,
+              () -> -driver.getRawAxis(translationAxis),
+              () -> -driver.getRawAxis(strafeAxis),
+              () -> -driver.getRawAxis(rotationAxis),
+              () -> robotCentric));
 
     // Configure the button bindings
     configureButtonBindings();
     SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
+
+    idCommands.put(1,Id1.getcommand());
+    idCommands.put(2,Id2.getcommand());
+    idCommands.put(3,Id3.getcommand());
+    idCommands.put(6,Id6.getcommand());
+    idCommands.put(7,Id7.getcommand());
+    idCommands.put(8,Id8.getcommand());
+
   }
 
   /**
@@ -96,6 +115,15 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return new ExampleAuto(_swerve);
+    var autoCommand = getCommand();
+    return autocommand();
   }
+
+  public Command getCommand(){
+    var limeLight = new Limelight();
+    var tagId = limeLight.getTagId();
+    var tagIdInt = (int)tagId;
+    var tagIdInteger = (Integer)tagIdInt;
+    return idCommands.get(tagIdInteger);
+}
 }
