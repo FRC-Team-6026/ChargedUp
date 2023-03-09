@@ -26,14 +26,39 @@ public class ExampleAuto extends SequentialCommandGroup {
                 Constants.AutoConstants.kMaxSpeedMetersPerSecond,
                 Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared)
             .setKinematics(Constants.Swerve.swerveKinematics);
+    if(Id == 1 || Id == 2 || Id == 3) //Red Side of the Field, 1 being the farthest from the loading station
+    {
+        if(Id == 1){
 
+        }
+        else if (Id == 2){
+
+        }
+        else if (Id == 3){
+
+        }
+    } 
+    else if (Id == 8 || Id == 7 || Id == 6) //Blue Side of the Field, 8 being the farthest from the loading station
+    {
+        if (Id == 8){
+
+        }
+        else if (Id == 7){
+
+        }
+        else if (Id == 6){
+
+        }
+    }
     // An example trajectory to follow.  All units in meters.
     Trajectory exampleTrajectory =
         TrajectoryGenerator.generateTrajectory(
             // Start at the origin facing the +X direction
             new Pose2d(0, 0, new Rotation2d(0)),
             // Pass through these two interior waypoints, making an 's' curve path
-            List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+            List.of(new Translation2d(1,1), 
+                    new Translation2d(2, -1),
+                    new Translation2d(2,4)),
             // End 3 meters straight ahead of where we started, facing forward
             new Pose2d(3, 0, new Rotation2d(0)),
             config);
