@@ -46,7 +46,7 @@ public class GrabArm extends SubsystemBase {
     private double _targettedRotation = 0;
     private double _targettedExtension = 0;
     private double _compensationRotation = 0;
-    private double _compensationExtension = .1;
+    private double _compensationExtension = 0;
 
     public GrabArm(DoubleSupplier rotationSupplier, DoubleSupplier extensionSupplier) {
         super();
@@ -184,10 +184,10 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryRotation) {
             //Comensation Calculations
             double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
-            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.toRadians(_rotationEncoder.getPosition()-39)));
+            double inLbTorque = (10 * centerOfGrav * Math.cos(Math.toRadians(_rotationEncoder.getPosition()- Constants.GrabArm.rotationOffsetinDegrees)));
             double newtonMeterTorque = inLbTorque / 8.8507457673787;
             double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
-            _compensationRotation = motorOutput / 2.6;
+            _compensationRotation = motorOutput / 2.6; // output / stall torque
 
             //Rotation Targetting
             _targettedRotation = _targettedRotation + rotationSpeedDps;
@@ -214,6 +214,13 @@ public class GrabArm extends SubsystemBase {
         }    
 
         if (!_isStationaryExtension) {
+            //Compensation Calculations
+            double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
+            double inLdTorque = (8 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            double newtonMeterTorque = inLdTorque / 8.8507457673787;
+            double motorOutput = newtonMeterTorque / Constants.GrabArm.extensionGearRatio;
+            _compensationExtension = motorOutput / 0.97; // output / stall torque
+
             //Extension Targetting
             _targettedExtension = _targettedExtension + extensionIps;
             if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){

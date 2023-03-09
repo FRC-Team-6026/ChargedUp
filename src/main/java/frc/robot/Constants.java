@@ -180,5 +180,7 @@ public final class Constants {
 
     public static final float rotationForwardSoftLimitDegrees = 185;
     public static final float extensionForwardSoftLimitInches = 20;
+
+    public static final double rotationOffsetinDegrees = 37;
   }
 }
