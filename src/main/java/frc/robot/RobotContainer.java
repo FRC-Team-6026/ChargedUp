@@ -49,6 +49,17 @@ public class RobotContainer {
   private final JoystickButton driveToTargetRight =
       new JoystickButton(driver, XboxController.Button.kB.value);
   private boolean robotCentric = false;
+
+  //Operator Buttons
+  private final JoystickButton rotationPPlus =
+      new JoystickButton(operator, XboxController.Button.kB.value);
+  private final JoystickButton rotationPMinus =
+      new JoystickButton(operator, XboxController.Button.kX.value);
+  private final JoystickButton extensionPPlus =
+      new JoystickButton(operator, XboxController.Button.kY.value);
+  private final JoystickButton extensionPMinus =
+      new JoystickButton(operator, XboxController.Button.kA.value);
+
   /* Subsystems */
   private final Swerve _swerve = new Swerve();
   private final GrabArm _grabArm = new GrabArm(() -> operator.getRawAxis(armRotationAxis), () -> -operator.getRawAxis(extensionAxis));
@@ -87,6 +98,11 @@ public class RobotContainer {
     driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
+
+    rotationPPlus.onTrue(new InstantCommand(() -> _grabArm.rotationPPlus()));
+    rotationPMinus.onTrue(new InstantCommand(() -> _grabArm.rotationPMinus()));
+    extensionPPlus.onTrue(new InstantCommand(() -> _grabArm.extensionPPlus()));
+    extensionPMinus.onTrue(new InstantCommand(() -> _grabArm.extensionPMinus()));
   }
 
   /**
@@ -95,6 +111,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    _swerve.resetToAbsolute();
     // An ExampleCommand will run in autonomous
     return new ExampleAuto(_swerve);
   }

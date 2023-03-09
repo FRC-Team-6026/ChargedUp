@@ -164,15 +164,16 @@ public class GrabArm extends SubsystemBase {
         //cubing inputs to give better control over the low range.
         rotationRatio = rotationRatio * rotationRatio * rotationRatio;
         extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
-        var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationHz;
-        var extensionIps = extensionRatio * Constants.GrabArm.maxIpsHz;
+        var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationExecution;
+        var extensionIps = extensionRatio * Constants.GrabArm.maxIpsExecution;
+        double spoolRadius = 0.875 / 2;
 
         double extensionheight = (_extensionEncoder.getPosition() + Constants.GrabArm.baseArmLength) * Math.sin(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees);
 
         if (extensionRatio != 0) {
             _ratchetServo.setAngle(90);
         } else {
-            _ratchetServo.setAngle(30);
+            //_ratchetServo.setAngle(30);
         }
 
         //set the stationary rotation when the arm comes to a stop.
@@ -222,10 +223,11 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension) {
             //Compensation Calculations
             double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-            double inLbTorque = (8 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            double newtonMeterTorque = inLbTorque / 8.8507457673787;
+            double tensionLB = (14 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            double inLBTorque = spoolRadius * tensionLB;
+            double newtonMeterTorque = inLBTorque / 8.8507457673787;
             double motorOutput = newtonMeterTorque / Constants.GrabArm.extensionGearRatio;
-            _compensationExtension = motorOutput / 0.97; // output / stall torque
+            _compensationExtension = - motorOutput / 0.97; // output / stall torque
 
             //Extension Targetting
             _targettedExtension = _targettedExtension + extensionIps;
@@ -235,10 +237,7 @@ public class GrabArm extends SubsystemBase {
             
             //Extension Setting
             SmartDashboard.putNumber("targetExtension", _targettedExtension);
-            if(extensionRatio > 0) {
-                _compensationExtension = 0;
-            }
-            _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _extensionController.setReference(10, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
@@ -294,6 +293,24 @@ public class GrabArm extends SubsystemBase {
             _grabArmExtension = maxExtension;
         }
     }
+
+    public void rotationPPlus(){
+        _rotationController.setP(_rotationController.getP() + 0.01 );
+        SmartDashboard.putNumber("PvalueRotation", _rotationController.getP());
+    }
+    public void rotationPMinus(){
+        _rotationController.setP(_rotationController.getP() - 0.01 );
+        SmartDashboard.putNumber("PvalueRotation", _rotationController.getP());
+    }
+    public void extensionPPlus(){
+        _extensionController.setP(_extensionController.getP() + 0.01 );
+        SmartDashboard.putNumber("PvalueExtension", _extensionController.getP());
+    }
+    public void extensionPMinus(){
+        _extensionController.setP(_extensionController.getP() - 0.01 );
+        SmartDashboard.putNumber("PvalueExtension", _extensionController.getP());
+    }
+
 
     public enum GrabArmExtensions {
         Stowed {

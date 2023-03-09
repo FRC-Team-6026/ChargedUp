@@ -102,6 +102,12 @@ public class Swerve extends SubsystemBase {
         : Rotation2d.fromDegrees(gyro.getYaw());
   }
 
+  public void resetToAbsolute() {
+    for (SwerveModule mod : mSwerveMods) {
+        mod.resetToAbsolute();
+    }
+  }
+
   @Override
   public void periodic() {
     swerveOdometry.update(getYaw(), getPositions());

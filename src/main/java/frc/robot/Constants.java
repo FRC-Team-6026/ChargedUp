@@ -161,7 +161,7 @@ public final class Constants {
     public static final double rotationKD = 0.025;
     public static final double rotationKFF = 0.0;
 
-    public static final double extensionKP = 0.05;
+    public static final double extensionKP = 0.1;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
@@ -171,12 +171,12 @@ public final class Constants {
 
     public static final double maxRotationDps = 40.0;
     public static final double maxRotationAccDps = 30.0;
-    public static final double maxRotationHz = maxRotationDps / codeExecutionRate;
-    public static final double maxRotationAccDpsHz = maxRotationAccDps / codeExecutionRate;
+    public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
+    public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
     public static final double maxIps = 5.0;
     public static final double maxIpsAcc = 3.0;
-    public static final double maxIpsHz = maxIps / codeExecutionRate;
-    public static final double maxIpsAccHz = maxIpsAcc / codeExecutionRate;
+    public static final double maxIpsExecution = maxIps / codeExecutionRate;
+    public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
 
     public static final float rotationForwardSoftLimitDegrees = 185;
     public static final float extensionForwardSoftLimitInches = 22;
