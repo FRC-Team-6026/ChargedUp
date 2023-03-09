@@ -18,8 +18,8 @@ public class Limelight extends SubsystemBase {
         //+X to the right of the target
         //+Y down to the ground
         //+Z straight out from the target
-        var x = robotPoseArray[0];
-        var y = robotPoseArray[2];
+        var x = robotPoseArray[2];
+        var y = robotPoseArray[0];
         var rotation = robotPoseArray[4];
         return new Pose2d(x, y, Rotation2d.fromDegrees(rotation));
     }
