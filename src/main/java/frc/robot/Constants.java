@@ -146,7 +146,7 @@ public final class Constants {
     public static final double extensionConversionFactorInches = 0.875 * Math.PI / extensionGearRatio;
     public static final double extensionVelocityConversionFactorIps = extensionConversionFactorInches / 60.0;
 
-    public static final int rotationContinuousCurrentLimit = 20;
+    public static final int rotationContinuousCurrentLimit = 35;
     public static final int extensionContinuousCurrentLimit = 20;
 
     public static final boolean rotationInvert = false;
@@ -186,5 +186,10 @@ public final class Constants {
     public static final double pivotHeightInches = 26.5;
     public static final double baseArmLength = 32.5;
     public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
+    public static final double coneWeightLb = 1.4375;
+    public static final double spoolRadius = 0.35/2;
+
+    public static final double rotationStallTorque = 1;
+    public static final double extensionStallTorque = 0.18;
   }
 }
