@@ -233,7 +233,7 @@ public class GrabArm extends SubsystemBase {
         //set the stationary inches when the extension comes to a stop.
         if (extensionRatio == 0 && !_isStationaryExtension) {
             _isStationaryExtension = true;
-            _stationaryExtension = _rotationEncoder.getPosition();
+            _stationaryExtension = _extensionEncoder.getPosition();
             _targettedExtension = _stationaryExtension;
         } else if (extensionRatio != 0) {
             _isStationaryExtension=false;
@@ -242,13 +242,9 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension && isPlayerExtension) {
             //Compensation Calculations
             double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-            double tensionLB1stStage = (4 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            double tensionLB2ndStage = (11 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            if(_extensionEncoder.getPosition() > 100){
-                extensionStageCompensationCalculations(tensionLB1stStage);
-            }else{
-                extensionStageCompensationCalculations(tensionLB2ndStage);
-            }
+            //double tensionLB1stStage = (4 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            double tensionLB2ndStage = (7 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            extensionStageCompensationCalculations(tensionLB2ndStage);
 
             //Extension Targetting
             _targettedExtension = _targettedExtension + extensionIps;
@@ -260,9 +256,6 @@ public class GrabArm extends SubsystemBase {
             _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
         } else {
             _targettedExtension = _stationaryExtension;
-            if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
-                _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
-            }
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
         }
@@ -279,6 +272,7 @@ public class GrabArm extends SubsystemBase {
         _rotationController.setI(Constants.GrabArm.rotationKI);
         _rotationController.setD(Constants.GrabArm.rotationKD);
         _rotationController.setFF(Constants.GrabArm.rotationKFF);
+        _rotationController.setOutputRange(Constants.GrabArm.rotationMin, Constants.GrabArm.rotationMax);
         _rotationMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _rotationMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.rotationForwardSoftLimitDegrees);
         _rotationMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
@@ -299,6 +293,7 @@ public class GrabArm extends SubsystemBase {
         _extensionController.setI(Constants.GrabArm.extensionKI);
         _extensionController.setD(Constants.GrabArm.extensionKD);
         _extensionController.setFF(Constants.GrabArm.extensionKFF);
+        _extensionController.setOutputRange(Constants.GrabArm.extensionMin, Constants.GrabArm.extensionMax);
         _extensionMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _extensionMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.extensionForwardSoftLimitInches);
         _extensionMotor.enableSoftLimit(SoftLimitDirection.kForward, true);

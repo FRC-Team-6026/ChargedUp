@@ -99,10 +99,10 @@ public class RobotContainer {
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
 
-    rotationPPlus.onTrue(new InstantCommand(() -> _grabArm.rotationPPlus()));
-    rotationPMinus.onTrue(new InstantCommand(() -> _grabArm.rotationPMinus()));
-    extensionPPlus.onTrue(new InstantCommand(() -> _grabArm.extensionPPlus()));
-    extensionPMinus.onTrue(new InstantCommand(() -> _grabArm.extensionPMinus()));
+    //rotationPPlus.onTrue(new InstantCommand(() -> _grabArm.rotationPPlus()));
+    //rotationPMinus.onTrue(new InstantCommand(() -> _grabArm.rotationPMinus()));
+    //extensionPPlus.onTrue(new InstantCommand(() -> _grabArm.extensionPPlus()));
+    //extensionPMinus.onTrue(new InstantCommand(() -> _grabArm.extensionPMinus()));
   }
 
   /**
