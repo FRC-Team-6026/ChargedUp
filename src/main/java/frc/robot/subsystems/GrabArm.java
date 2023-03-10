@@ -327,23 +327,6 @@ public class GrabArm extends SubsystemBase {
         _isConeMode = !_isConeMode;
     }
 
-    public void rotationPPlus(){
-        _rotationController.setP(_rotationController.getP() + 0.01 );
-        SmartDashboard.putNumber("PvalueRotation", _rotationController.getP());
-    }
-    public void rotationPMinus(){
-        _rotationController.setP(_rotationController.getP() - 0.01 );
-        SmartDashboard.putNumber("PvalueRotation", _rotationController.getP());
-    }
-    public void extensionPPlus(){
-        _extensionController.setP(_extensionController.getP() + 0.01 );
-        SmartDashboard.putNumber("PvalueExtension", _extensionController.getP());
-    }
-    public void extensionPMinus(){
-        _extensionController.setP(_extensionController.getP() - 0.01 );
-        SmartDashboard.putNumber("PvalueExtension", _extensionController.getP());
-    }
-
     public enum GrabArmExtensions {
         Stowed {
             @Override

@@ -50,16 +50,6 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kB.value);
   private boolean robotCentric = false;
 
-  //Operator Buttons
-  private final JoystickButton rotationPPlus =
-      new JoystickButton(operator, XboxController.Button.kB.value);
-  private final JoystickButton rotationPMinus =
-      new JoystickButton(operator, XboxController.Button.kX.value);
-  private final JoystickButton extensionPPlus =
-      new JoystickButton(operator, XboxController.Button.kY.value);
-  private final JoystickButton extensionPMinus =
-      new JoystickButton(operator, XboxController.Button.kA.value);
-
   /* Subsystems */
   private final Swerve _swerve = new Swerve();
   private final GrabArm _grabArm = new GrabArm(() -> operator.getRawAxis(armRotationAxis), () -> -operator.getRawAxis(extensionAxis));
