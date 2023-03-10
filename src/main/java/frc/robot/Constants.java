@@ -11,7 +11,7 @@ import frc.lib.config.SwerveModuleConstants;
 public final class Constants {
 
   public static final class Swerve {
-    public static final double stickDeadband = 0.05;
+    public static final double stickDeadband = 0.07;
 
     public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
@@ -122,8 +122,8 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 3;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 3;
+    public static final double kMaxSpeedMetersPerSecond = 1.5;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 1.5;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
@@ -138,13 +138,18 @@ public final class Constants {
   }
 
   public static final class GrabArm {
+    public static final double spoolDiameter = 0.375;
+    public static final double spoolRadius = spoolDiameter/2;
+
     public static final double stickDeadband = 0.05;
     public static final double rotationGearRatio = 80;
     public static final double rotationConversionFactor = 360.0 / rotationGearRatio;
+    public static final double rotationVelocityConversionFactorDps = rotationConversionFactor / 60.0;
     public static final double extensionGearRatio = 3;
-    public static final double extensionConversionFactorInches = 0.875 * Math.PI / extensionGearRatio;
+    public static final double extensionConversionFactorInches = spoolDiameter * Math.PI / extensionGearRatio;
+    public static final double extensionVelocityConversionFactorIps = extensionConversionFactorInches / 60.0;
 
-    public static final int rotationContinuousCurrentLimit = 20;
+    public static final int rotationContinuousCurrentLimit = 35;
     public static final int extensionContinuousCurrentLimit = 20;
 
     public static final boolean rotationInvert = false;
@@ -154,17 +159,43 @@ public final class Constants {
 
     public static final double voltageComp = 12.0;
 
-    public static final double rotationKP = 0.005;
+    public static final double rotationKP = 0.1;
     public static final double rotationKI = 0.0;
-    public static final double rotationKD = 0.0;
+    public static final double rotationKD = 0.025;
     public static final double rotationKFF = 0.0;
+    public static final double rotationMin = -65.0;
+    public static final double rotationMax = 65.0;
 
-    public static final double extensionKP = 0.005;
+    public static final double extensionKP = 0.05;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
+    public static final double extensionMin = -15.0;
+    public static final double extensionMax = 5.0;
 
-    public static final double maxRotationDps = 30.0;
-    public static final double maxIps = 10.0;
+    public static final double codeExecutionRate = 50.0;
+    public static final double codeExecutionRateTime = 1.0 / codeExecutionRate;
+
+    public static final double maxRotationDps = 55.0;
+    public static final double maxRotationAccDps = 30.0;
+    public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
+    public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
+    public static final double maxIps = 5.0;
+    public static final double maxIpsAcc = 3.0;
+    public static final double maxIpsExecution = maxIps / codeExecutionRate;
+    public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
+
+    public static final float rotationForwardSoftLimitDegrees = 185;
+    public static final float extensionForwardSoftLimitInches = 20;
+
+    public static final double rotationOffsetinDegrees = 37;
+    public static final double heightLimit = 72; // Max Height Minus 6''
+    public static final double pivotHeightInches = 26.5;
+    public static final double baseArmLength = 32.5;
+    public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
+    public static final double coneWeightLb = 1.4375;
+
+    public static final double rotationStallTorque = 2.6;
+    public static final double extensionStallTorque = .97;
   }
 }

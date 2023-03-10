@@ -5,12 +5,15 @@ import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxLimitSwitch;
 import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
+import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.SparkMaxPIDController.AccelStrategy;
+import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
@@ -30,11 +33,21 @@ public class GrabArm extends SubsystemBase {
     private final RelativeEncoder _extensionEncoder;
     private final SparkMaxPIDController _rotationController;
     private final SparkMaxPIDController _extensionController;
+    private final SparkMaxLimitSwitch _rotationLimitSwitch;
+    private final SparkMaxLimitSwitch _extensionLimitSwitch;
     private final Servo _ratchetServo = new Servo(9);
     private final DoubleSupplier _rotationSupplier;
     private final DoubleSupplier _extensionSupplier;
-    private final SlewRateLimiter _rotationLimiter = new SlewRateLimiter(30);
-    private final SlewRateLimiter _extensionLimiter = new SlewRateLimiter(10);
+
+    private boolean _isStationaryRotation = true;
+    private boolean _isStationaryExtension = true;
+    private double _stationaryRotation = 0;
+    private double _stationaryExtension = 0;
+    private double _targettedRotation = 0;
+    private double _targettedExtension = 0;
+    private double _compensationRotation = 0;
+    private double _compensationExtension = 0;
+    private boolean _isConeMode = false;
 
     public GrabArm(DoubleSupplier rotationSupplier, DoubleSupplier extensionSupplier) {
         super();
@@ -54,9 +67,16 @@ public class GrabArm extends SubsystemBase {
         _extensionEncoder = _extensionMotor.getEncoder();
         _rotationController = _rotationMotor.getPIDController();
         _extensionController = _extensionMotor.getPIDController();
+        _rotationLimitSwitch = _rotationMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
+        _extensionLimitSwitch = _extensionMotor.getReverseLimitSwitch(SparkMaxLimitSwitch.Type.kNormallyOpen);
 
         configRotationMotor();
         configExtensionMotor();
+
+        _stationaryRotation = _rotationEncoder.getPosition();
+        _targettedRotation = _rotationEncoder.getPosition();
+        _stationaryExtension = _extensionEncoder.getPosition();
+        _targettedExtension = _extensionEncoder.getPosition();
 
         this.setDefaultCommand(new FunctionalCommand(() -> {/*do nothing on init*/},
             // do arcade drive by default
@@ -81,14 +101,33 @@ public class GrabArm extends SubsystemBase {
 
         SmartDashboard.putNumber("rotation angle", _rotationEncoder.getPosition());
         SmartDashboard.putNumber("extension inches", _extensionEncoder.getPosition());
+
+        SmartDashboard.putBoolean("rotationswitchenable", _rotationLimitSwitch.isLimitSwitchEnabled());
+        SmartDashboard.putBoolean("rotationswitchstatus", _rotationLimitSwitch.isPressed());
+        SmartDashboard.putBoolean("extensionswitchenable", _extensionLimitSwitch.isLimitSwitchEnabled());
+        SmartDashboard.putBoolean("extensionswitchstatus", _extensionLimitSwitch.isPressed());
+
+        SmartDashboard.putNumber("rotation velocity", _rotationEncoder.getVelocity());
+        SmartDashboard.putNumber("extension velocity", _extensionEncoder.getVelocity());
+        
+        SmartDashboard.putNumber("targetRotation", _targettedRotation);
+        SmartDashboard.putNumber("targetExtension", _targettedExtension);
+
+        if (_rotationLimitSwitch.isPressed()) {
+            _rotationEncoder.setPosition(0);
+        }
+
+        if (_extensionLimitSwitch.isPressed()) {
+            _extensionEncoder.setPosition(0);
+        }
     }
 
     public void closeGrabber() {
-        _grabberSolenoid.set(true);
+        _grabberSolenoid.set(false);
     }
 
     public void openGrabber() {
-        _grabberSolenoid.set(false);
+        _grabberSolenoid.set(true);
     }
 
     public void goToStowedPosition() {
@@ -127,20 +166,99 @@ public class GrabArm extends SubsystemBase {
     }
 
     private void manualControls() {
+        boolean isPlayerRotation = true;
+        boolean isPlayerExtension = true;
+
         var rotationRatio = MathUtil.applyDeadband(_rotationSupplier.getAsDouble(), Constants.GrabArm.stickDeadband);
         var extensionRatio = MathUtil.applyDeadband(_extensionSupplier.getAsDouble(), Constants.GrabArm.stickDeadband);
-        //var rotationSpeedDps = _rotationLimiter.calculate(rotationRatio * Constants.GrabArm.maxRotationDps);
-        //var extensionIps = _extensionLimiter.calculate(extensionRatio * Constants.GrabArm.maxIps);
-        rotationRatio = rotationRatio * rotationRatio * rotationRatio * 0.5;
-        extensionRatio = extensionRatio * extensionRatio * extensionRatio * 0.5;      
-        if (extensionRatio > 0) {
-            _ratchetServo.setAngle(80);
+        //cubing inputs to give better control over the low range.
+        rotationRatio = rotationRatio * rotationRatio * rotationRatio;
+        extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
+        var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationExecution;
+        var extensionIps = extensionRatio * Constants.GrabArm.maxIpsExecution;
+
+        double extensionHeight = (_extensionEncoder.getPosition() + Constants.GrabArm.baseArmLength) * Math.sin(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees);
+
+        if (extensionRatio != 0) {
+            _ratchetServo.setAngle(90);
         } else {
-            _ratchetServo.setAngle(0);
+            _ratchetServo.setAngle(30);
         }
 
-        _rotationController.setReference(rotationRatio, ControlType.kDutyCycle);
-        _extensionController.setReference(extensionRatio, ControlType.kDutyCycle);
+        //set the stationary rotation when the arm comes to a stop.
+        if (rotationRatio == 0 && !_isStationaryRotation) {
+            _isStationaryRotation = true;
+            _stationaryRotation = _rotationEncoder.getPosition();
+            _targettedRotation = _stationaryRotation;
+        } else if (rotationRatio != 0) {
+            _isStationaryRotation=false;
+        }
+
+        if (!_isStationaryRotation && isPlayerRotation) {
+            //Comensation Calculations
+            double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
+            double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
+            double inLbTorque = (10 * centerOfGrav * cosineCompensation);
+            double newtonMeterTorque = inLbTorque / 8.8507457673787;
+            double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
+            _compensationRotation = motorOutput / Constants.GrabArm.rotationStallTorque; // output / stall torque
+
+            //Compensation Addition for Cone Mode
+            if (_isConeMode == true){
+                double conePivotLength = Constants.GrabArm.baseArmLength - 3 + _extensionEncoder.getPosition(); //Base Arm - into claw + arm extension ~= Cone Location relative to pivot
+                double inLbTorqueCone = Constants.GrabArm.coneWeightLb * conePivotLength * cosineCompensation;
+                double newtonMeterTorqueCone = inLbTorqueCone / 8.8507457673787;
+                double motorOutputCone = newtonMeterTorqueCone / Constants.GrabArm.rotationGearRatio;
+                _compensationRotation = _compensationRotation + (motorOutputCone / Constants.GrabArm.rotationStallTorque);
+            }
+           
+            //Rotation Targetting
+            _targettedRotation = _targettedRotation + rotationSpeedDps;
+            if(_targettedRotation > Constants.GrabArm.rotationForwardSoftLimitDegrees){
+                _targettedRotation = Constants.GrabArm.rotationForwardSoftLimitDegrees;
+            }
+            if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
+                _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
+            }
+
+            //Position Setting
+            _rotationController.setReference(_targettedRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
+            
+        } else {
+            _targettedRotation = _stationaryRotation;
+            //if the arm is stationary set the reference to position so that the arm doesn't drift over time
+            _rotationController.setReference(_stationaryRotation, ControlType.kPosition,0, _compensationRotation, ArbFFUnits.kPercentOut);
+        }
+
+        //set the stationary inches when the extension comes to a stop.
+        if (extensionRatio == 0 && !_isStationaryExtension) {
+            _isStationaryExtension = true;
+            _stationaryExtension = _extensionEncoder.getPosition();
+            _targettedExtension = _stationaryExtension;
+        } else if (extensionRatio != 0) {
+            _isStationaryExtension=false;
+        }    
+
+        if (!_isStationaryExtension && isPlayerExtension) {
+            //Compensation Calculations
+            double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
+            //double tensionLB1stStage = (4 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            double tensionLB2ndStage = (7 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            extensionStageCompensationCalculations(tensionLB2ndStage);
+
+            //Extension Targetting
+            _targettedExtension = _targettedExtension + extensionIps;
+            if(_targettedExtension > Constants.GrabArm.extensionForwardSoftLimitInches){
+                _targettedExtension = Constants.GrabArm.extensionForwardSoftLimitInches;
+            }
+            
+            //Extension Setting
+            _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
+        } else {
+            _targettedExtension = _stationaryExtension;
+            //if the arm is stationary set the reference to position so that the arm doesn't drift over time
+            _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
+        }
     }
 
     private void configRotationMotor() {
@@ -149,11 +267,18 @@ public class GrabArm extends SubsystemBase {
         _rotationMotor.setInverted(Constants.GrabArm.rotationInvert);
         _rotationMotor.setIdleMode(Constants.GrabArm.rotationNeutralMode);
         _rotationEncoder.setPositionConversionFactor(Constants.GrabArm.rotationConversionFactor);
+        _rotationEncoder.setVelocityConversionFactor(Constants.GrabArm.rotationVelocityConversionFactorDps);
         _rotationController.setP(Constants.GrabArm.rotationKP);
         _rotationController.setI(Constants.GrabArm.rotationKI);
         _rotationController.setD(Constants.GrabArm.rotationKD);
         _rotationController.setFF(Constants.GrabArm.rotationKFF);
+        _rotationController.setOutputRange(Constants.GrabArm.rotationMin, Constants.GrabArm.rotationMax);
         _rotationMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
+        _rotationMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.rotationForwardSoftLimitDegrees);
+        _rotationMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+        _rotationController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+        _rotationController.setSmartMotionMaxAccel(Constants.GrabArm.maxRotationAccDps, 0);
+        _rotationController.setSmartMotionMaxVelocity(Constants.GrabArm.maxRotationDps, 0);
         _rotationMotor.burnFlash();
     }
 
@@ -163,11 +288,18 @@ public class GrabArm extends SubsystemBase {
         _extensionMotor.setInverted(Constants.GrabArm.extensionInvert);
         _extensionMotor.setIdleMode(Constants.GrabArm.extensionNeutralMode);
         _extensionEncoder.setPositionConversionFactor(Constants.GrabArm.extensionConversionFactorInches);
+        _extensionEncoder.setVelocityConversionFactor(Constants.GrabArm.extensionVelocityConversionFactorIps);
         _extensionController.setP(Constants.GrabArm.extensionKP);
         _extensionController.setI(Constants.GrabArm.extensionKI);
         _extensionController.setD(Constants.GrabArm.extensionKD);
         _extensionController.setFF(Constants.GrabArm.extensionKFF);
+        _extensionController.setOutputRange(Constants.GrabArm.extensionMin, Constants.GrabArm.extensionMax);
         _extensionMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
+        _extensionMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.extensionForwardSoftLimitInches);
+        _extensionMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
+        _extensionController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
+        _extensionController.setSmartMotionMaxAccel(Constants.GrabArm.maxIpsAcc, 0);
+        _extensionController.setSmartMotionMaxVelocity(Constants.GrabArm.maxIps, 0);
         _extensionMotor.burnFlash();
     }
 
@@ -181,6 +313,35 @@ public class GrabArm extends SubsystemBase {
         if (maxExtension.ordinal() < _grabArmExtension.ordinal()) {
             _grabArmExtension = maxExtension;
         }
+    }
+
+    private void extensionStageCompensationCalculations(double tension){
+        double inLBTorque = Constants.GrabArm.spoolRadius * tension;
+        double newtonMeterTorque = inLBTorque / 8.8507457673787;
+        double motorOutput = newtonMeterTorque / Constants.GrabArm.extensionGearRatio;
+        _compensationExtension = - motorOutput / Constants.GrabArm.extensionStallTorque; // output / stall torque
+
+    }
+
+    public void isCone(){
+        _isConeMode = !_isConeMode;
+    }
+
+    public void rotationPPlus(){
+        _rotationController.setP(_rotationController.getP() + 0.01 );
+        SmartDashboard.putNumber("PvalueRotation", _rotationController.getP());
+    }
+    public void rotationPMinus(){
+        _rotationController.setP(_rotationController.getP() - 0.01 );
+        SmartDashboard.putNumber("PvalueRotation", _rotationController.getP());
+    }
+    public void extensionPPlus(){
+        _extensionController.setP(_extensionController.getP() + 0.01 );
+        SmartDashboard.putNumber("PvalueExtension", _extensionController.getP());
+    }
+    public void extensionPMinus(){
+        _extensionController.setP(_extensionController.getP() - 0.01 );
+        SmartDashboard.putNumber("PvalueExtension", _extensionController.getP());
     }
 
     public enum GrabArmExtensions {
