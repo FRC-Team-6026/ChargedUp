@@ -187,9 +187,9 @@ public final class Constants {
     public static final double baseArmLength = 32.5;
     public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
     public static final double coneWeightLb = 1.4375;
-    public static final double spoolRadius = 0.35/2;
+    public static final double spoolRadius = 0.375/2;
 
-    public static final double rotationStallTorque = 1;
-    public static final double extensionStallTorque = 0.18;
+    public static final double rotationStallTorque = 2.6;
+    public static final double extensionStallTorque = .97;
   }
 }
