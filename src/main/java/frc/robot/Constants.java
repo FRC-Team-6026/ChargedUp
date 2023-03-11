@@ -13,6 +13,10 @@ public final class Constants {
   public static final class Swerve {
     public static final double stickDeadband = 0.07;
 
+    //Leveling Constants
+    public static final double incrimentalChangeMeters = 0.01;
+    public static final double maxPitchDegrees = 2.5;
+
     public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
     /* Drivetrain Constants */

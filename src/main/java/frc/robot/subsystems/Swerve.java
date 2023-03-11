@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.commands.DriveCodes;
 
 public class Swerve extends SubsystemBase {
   private final AHRS gyro;
@@ -22,6 +23,10 @@ public class Swerve extends SubsystemBase {
   private SwerveModule[] mSwerveMods;
 
   private Field2d field;
+
+  private DriveCodes codes;
+
+  public static boolean leveling = false;
 
   public Swerve() {
     gyro = new AHRS();
@@ -95,6 +100,16 @@ public class Swerve extends SubsystemBase {
   public void zeroGyro() {
     gyro.zeroYaw();
   }
+
+  public void levelToGround(Swerve s_Swerve){
+    if(!leveling){
+      leveling = !leveling;
+      codes.levelingCode(s_Swerve, gyro);
+    } else if(leveling){
+      leveling = !leveling;
+    }
+  }
+
 
   public Rotation2d getYaw() {
     return (Constants.Swerve.invertGyro)
