@@ -115,10 +115,14 @@ public class GrabArm extends SubsystemBase {
 
         if (_rotationLimitSwitch.isPressed()) {
             _rotationEncoder.setPosition(0);
+            _targettedRotation = 0;
+            _stationaryRotation = 0;
         }
 
         if (_extensionLimitSwitch.isPressed()) {
             _extensionEncoder.setPosition(0);
+            _targettedExtension = 0;
+            _stationaryExtension = 0;
         }
     }
 
