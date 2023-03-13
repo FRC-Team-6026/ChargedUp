@@ -69,7 +69,7 @@ public final class Constants {
     public static final double angleConversionFactor = 360.0 / angleGearRatio;
 
     /* Swerve Profiling Values */
-    public static final double maxSpeed = 4; // meters per second
+    public static final double maxSpeed = 4.5; // meters per second
     public static final double maxAngularVelocity = 4; //radians per second
 
     /* Neutral Modes */
@@ -163,7 +163,7 @@ public final class Constants {
 
     public static final double voltageComp = 12.0;
 
-    public static final double rotationKP = 0.1;
+    public static final double rotationKP = 0.09;
     public static final double rotationKI = 0.0;
     public static final double rotationKD = 0.025;
     public static final double rotationKFF = 0.0;
@@ -180,8 +180,8 @@ public final class Constants {
     public static final double codeExecutionRate = 50.0;
     public static final double codeExecutionRateTime = 1.0 / codeExecutionRate;
 
-    public static final double maxRotationDps = 55.0;
-    public static final double maxRotationAccDps = 30.0;
+    public static final double maxRotationDps = 80.0;
+    public static final double maxRotationAccDps = 45.0;
     public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
     public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
     public static final double maxIps = 5.0;
@@ -189,10 +189,10 @@ public final class Constants {
     public static final double maxIpsExecution = maxIps / codeExecutionRate;
     public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
 
-    public static final float rotationForwardSoftLimitDegrees = 185;
-    public static final float extensionForwardSoftLimitInches = 20;
+    public static final float rotationForwardSoftLimitDegrees = 188;
+    public static final float extensionForwardSoftLimitInches = 9;
 
-    public static final double rotationOffsetinDegrees = 37;
+    public static final double rotationOffsetinDegrees = 27;
     public static final double heightLimit = 72; // Max Height Minus 6''
     public static final double pivotHeightInches = 26.5;
     public static final double baseArmLength = 32.5;
