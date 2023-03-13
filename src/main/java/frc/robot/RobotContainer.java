@@ -103,6 +103,6 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     _swerve.resetToAbsolute();
     // An ExampleCommand will run in autonomous
-    return new ExampleAuto(_swerve);
+    return new ExampleAuto(_swerve, _swerve.getGyro());
   }
 }

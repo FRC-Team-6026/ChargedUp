@@ -12,11 +12,14 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import frc.robot.Constants;
+import frc.robot.commands.LevelRobot;
 import frc.robot.subsystems.Swerve;
 import java.util.List;
 
+import com.kauailabs.navx.frc.AHRS;
+
 public class ExampleAuto extends SequentialCommandGroup {
-  public ExampleAuto(Swerve s_Swerve) {
+  public ExampleAuto(Swerve s_Swerve, AHRS gyro) {
     TrajectoryConfig config =
         new TrajectoryConfig(
                 Constants.AutoConstants.kMaxSpeedMetersPerSecond,
@@ -30,7 +33,7 @@ public class ExampleAuto extends SequentialCommandGroup {
             new Pose2d(0, 0, new Rotation2d(0)),
             List.of(new Translation2d(1, 0)),
             // End 3 meters straight ahead of where we started, facing forward
-            new Pose2d(2.65,0, new Rotation2d(Math.toRadians(10))),
+            new Pose2d(2.65,0, new Rotation2d(Math.toRadians(0))),
             config);
 
     var thetaController =
@@ -54,6 +57,7 @@ public class ExampleAuto extends SequentialCommandGroup {
 
     addCommands(
         new InstantCommand(() -> s_Swerve.resetOdometry(exampleTrajectory.getInitialPose())),
-        swerveControllerCommand);
+        swerveControllerCommand,
+        new LevelRobot(s_Swerve, gyro));
   }
 }
