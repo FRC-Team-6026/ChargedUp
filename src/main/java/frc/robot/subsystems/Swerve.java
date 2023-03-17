@@ -151,6 +151,10 @@ public class Swerve extends SubsystemBase {
     _field.setRobotPose(newPose);
   }
 
+  public AHRS getGyro(){
+    return gyro;
+  }
+
   @Override
   public void periodic() {
     if(_fieldAngleAdjusted){

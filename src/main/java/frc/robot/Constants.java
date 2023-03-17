@@ -131,6 +131,12 @@ public final class Constants {
     public static final double kPYController = 1;
     public static final double kPThetaController = 1;
 
+    public static final double gyroPositionTolerance = 0.05;
+    public static final double gyroRotationTolerance = 2.0;
+    public static final double gyroMaxVelocity = 1.5;
+    public static final double gyroOutputMeterRange = 5.0; //Meters out at which the output is 1
+    public static final double gyroOutputDegreeRange = 15.0; //Degrees out at which the output is 1
+
     // Constraint for the motion profilied robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints =
         new TrapezoidProfile.Constraints(
