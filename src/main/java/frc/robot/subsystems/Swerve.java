@@ -10,6 +10,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,46 +19,51 @@ import frc.robot.Constants;
 public class Swerve extends SubsystemBase {
   private final AHRS gyro;
 
-  private SwerveDriveOdometry swerveOdometry;
-  private SwerveModule[] mSwerveMods;
+  private SwerveDriveOdometry _swerveOdometry;
+  private SwerveModule[] _SwerveMods;
 
-  private boolean fieldAngleAdjusted = false;
+  private boolean _fieldAngleAdjusted = false;
+  private boolean _calibratingGyro = false;
 
-  private Field2d field;
+  private Timer _timer;
+
+  private Field2d _field;
 
   public Swerve() {
     gyro = new AHRS();
     gyro.reset();
     zeroGyro();
 
-    mSwerveMods =
+    _SwerveMods =
         new SwerveModule[] {
           new SwerveModule(0, Constants.Swerve.Mod0.constants),
           new SwerveModule(1, Constants.Swerve.Mod1.constants),
           new SwerveModule(2, Constants.Swerve.Mod2.constants),
           new SwerveModule(3, Constants.Swerve.Mod3.constants)
         };
-    swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getPositions());
+    _swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getPositions());
 
-    field = new Field2d();
-    SmartDashboard.putData("Field", field);
+    _field = new Field2d();
+    SmartDashboard.putData("Field", _field);
   }
 
   public void drive(
       Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
+    if(!_calibratingGyro){
     SwerveModuleState[] swerveModuleStates =
         Constants.Swerve.swerveKinematics.toSwerveModuleStates(
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    translation.getX(), translation.getY(), rotation, getYaw())
+                    translation.getX(), translation.getY(), rotation, getAngle())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
-    for (SwerveModule mod : mSwerveMods) {
+    for (SwerveModule mod : _SwerveMods) {
       mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
       var modState = swerveModuleStates[mod.moduleNumber];
       SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired angle: ", modState.angle.getDegrees());
       SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired velocity: ", modState.speedMetersPerSecond);
+    }
     }
   }
 
@@ -65,22 +71,22 @@ public class Swerve extends SubsystemBase {
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
 
-    for (SwerveModule mod : mSwerveMods) {
+    for (SwerveModule mod : _SwerveMods) {
       mod.setDesiredState(desiredStates[mod.moduleNumber], false);
     }
   }
 
   public Pose2d getPose() {
-    return swerveOdometry.getPoseMeters();
+    return _swerveOdometry.getPoseMeters();
   }
 
   public void resetOdometry(Pose2d pose) {
-    swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
+    _swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
   }
 
   public SwerveModuleState[] getStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
-    for (SwerveModule mod : mSwerveMods) {
+    for (SwerveModule mod : _SwerveMods) {
       states[mod.moduleNumber] = mod.getState();
     }
     return states;
@@ -88,7 +94,7 @@ public class Swerve extends SubsystemBase {
 
   public SwerveModulePosition[] getPositions() {
     SwerveModulePosition[] positions = new SwerveModulePosition[4];
-    for (SwerveModule mod : mSwerveMods) {
+    for (SwerveModule mod : _SwerveMods) {
       positions[mod.moduleNumber] = mod.getPostion();
     }
     return positions;
@@ -97,6 +103,7 @@ public class Swerve extends SubsystemBase {
   public void zeroGyro() {
     gyro.zeroYaw();
     gyro.setAngleAdjustment(0);
+    _fieldAngleAdjusted = false;
   }
 
   public void zeroFieldAngleOffset(double angleOffset, boolean isYourSide){ //isYourSide will be used for detecting if a 180 offset is to be added to the angle, to catch if you zero it on a tag on the opposing side from where automated proceedures should take place (i.e. loading zone)
@@ -106,7 +113,7 @@ public class Swerve extends SubsystemBase {
     } else {
       gyro.setAngleAdjustment(180 + angleOffset);
     }
-    fieldAngleAdjusted = true;
+    _fieldAngleAdjusted = true;
   }
 
   public Rotation2d getYaw() {
@@ -122,23 +129,40 @@ public class Swerve extends SubsystemBase {
   }
 
   public void resetToAbsolute() {
-    for (SwerveModule mod : mSwerveMods) {
+    for (SwerveModule mod : _SwerveMods) {
         mod.resetToAbsolute();
     }
   }
 
+  public void updateGyroCalibration() {
+    _calibratingGyro = true;
+    gyro.calibrate();
+    _timer.start();
+    while(_calibratingGyro){
+      if(_timer.hasElapsed(2)){
+        _timer.stop();
+        _timer.reset();
+        _calibratingGyro = false;
+      }
+    }
+  }
+
+  public void fieldUpdate(Pose2d newPose) {
+    _field.setRobotPose(newPose);
+  }
+
   @Override
   public void periodic() {
-    if(fieldAngleAdjusted){
-      swerveOdometry.update(getAngle(), getPositions());
+    if(_fieldAngleAdjusted){
+      _swerveOdometry.update(getAngle(), getPositions());
     } else {
-      swerveOdometry.update(getYaw(), getPositions());
+      _swerveOdometry.update(getYaw(), getPositions());
     }
-    field.setRobotPose(getPose());
+    _field.setRobotPose(getPose());
 
-    SmartDashboard.putBoolean("isAngleAdjusted", fieldAngleAdjusted);
+    SmartDashboard.putBoolean("isAngleAdjusted", _fieldAngleAdjusted);
 
-    for (SwerveModule mod : mSwerveMods) {
+    for (SwerveModule mod : _SwerveMods) {
       SmartDashboard.putNumber(
           "Mod " + mod.moduleNumber + " Cancoder", mod.getCanCoder().getDegrees());
       SmartDashboard.putNumber(

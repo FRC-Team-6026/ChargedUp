@@ -22,4 +22,17 @@ public class Limelight extends SubsystemBase {
         var rotation = robotPoseArray[4];
         return new Pose2d(x, y, Rotation2d.fromDegrees(rotation));
     }
+
+    public Pose2d getRobotPoseInFieldSpace() {
+        var robotPoseArray = new double[6];
+        _table.getEntry("botpose").getDoubleArray(robotPoseArray);
+        //target space from the perspective of looking at the target:
+        //+X to the right of the target
+        //+Y down to the ground
+        //+Z straight out from the target
+        var x = robotPoseArray[0];
+        var y = robotPoseArray[2];
+        var rotation = robotPoseArray[4];
+        return new Pose2d(x, y, Rotation2d.fromDegrees(rotation));
+    }
 }
