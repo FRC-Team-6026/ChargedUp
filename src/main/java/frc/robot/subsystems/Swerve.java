@@ -21,8 +21,6 @@ public class Swerve extends SubsystemBase {
   private SwerveDriveOdometry swerveOdometry;
   private SwerveModule[] mSwerveMods;
 
-  private boolean fieldAngleAdjusted = false;
-
   private Field2d field;
 
   public Swerve() {
@@ -96,29 +94,12 @@ public class Swerve extends SubsystemBase {
 
   public void zeroGyro() {
     gyro.zeroYaw();
-    gyro.setAngleAdjustment(0);
-  }
-
-  public void zeroFieldAngleOffset(double angleOffset, boolean isYourSide){ //isYourSide will be used for detecting if a 180 offset is to be added to the angle, to catch if you zero it on a tag on the opposing side from where automated proceedures should take place (i.e. loading zone)
-    gyro.zeroYaw();
-    if(isYourSide){
-      gyro.setAngleAdjustment(angleOffset);
-    } else {
-      gyro.setAngleAdjustment(180 + angleOffset);
-    }
-    fieldAngleAdjusted = true;
   }
 
   public Rotation2d getYaw() {
     return (Constants.Swerve.invertGyro)
         ? Rotation2d.fromDegrees(360 - gyro.getYaw())
         : Rotation2d.fromDegrees(gyro.getYaw());
-  }
-
-  public Rotation2d getAngle() {
-    return (Constants.Swerve.invertGyro)
-        ? Rotation2d.fromDegrees(360 - gyro.getAngle())
-        : Rotation2d.fromDegrees(gyro.getAngle());
   }
 
   public void resetToAbsolute() {
@@ -129,14 +110,8 @@ public class Swerve extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if(fieldAngleAdjusted){
-      swerveOdometry.update(getAngle(), getPositions());
-    } else {
-      swerveOdometry.update(getYaw(), getPositions());
-    }
+    swerveOdometry.update(getYaw(), getPositions());
     field.setRobotPose(getPose());
-
-    SmartDashboard.putBoolean("isAngleAdjusted", fieldAngleAdjusted);
 
     for (SwerveModule mod : mSwerveMods) {
       SmartDashboard.putNumber(
