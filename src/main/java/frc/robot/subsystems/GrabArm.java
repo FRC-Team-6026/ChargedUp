@@ -202,7 +202,7 @@ public class GrabArm extends SubsystemBase {
             //Comensation Calculations
             double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
             double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
-            double inLbTorque = (10 * centerOfGrav * cosineCompensation);
+            double inLbTorque = (5 * centerOfGrav * cosineCompensation);
             double newtonMeterTorque = inLbTorque / 8.8507457673787;
             double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
             _compensationRotation = motorOutput / Constants.GrabArm.rotationStallTorque; // output / stall torque
@@ -226,12 +226,12 @@ public class GrabArm extends SubsystemBase {
             }
 
             //Position Setting
-            _rotationController.setReference(_targettedRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(_targettedRotation, ControlType.kSmartMotion, 0, _compensationRotation, ArbFFUnits.kPercentOut);
             
         } else {
             _targettedRotation = _stationaryRotation;
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
-            _rotationController.setReference(_stationaryRotation, ControlType.kPosition,0, _compensationRotation, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(_stationaryRotation, ControlType.kSmartMotion,0, _compensationRotation, ArbFFUnits.kPercentOut);
         }
 
         //set the stationary inches when the extension comes to a stop.
@@ -257,11 +257,11 @@ public class GrabArm extends SubsystemBase {
             }
             
             //Extension Setting
-            _extensionController.setReference(_targettedExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _extensionController.setReference(_targettedExtension, ControlType.kSmartMotion, 0, _compensationExtension, ArbFFUnits.kPercentOut);
         } else {
             _targettedExtension = _stationaryExtension;
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
-            _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,0, _compensationExtension, ArbFFUnits.kPercentOut);
         }
     }
 
@@ -329,6 +329,11 @@ public class GrabArm extends SubsystemBase {
 
     public void isCone(){
         _isConeMode = !_isConeMode;
+    }
+
+    public void setRotationTargetTest(){
+        _stationaryRotation = 30;
+        _targettedRotation = 30;
     }
 
     public enum GrabArmExtensions {

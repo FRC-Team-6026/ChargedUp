@@ -48,6 +48,8 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kX.value);
   private final JoystickButton driveToTargetRight =
       new JoystickButton(driver, XboxController.Button.kB.value);
+  private final JoystickButton runPresetRotation = 
+      new JoystickButton(operator, XboxController.Button.kY.value);
   private boolean robotCentric = false;
 
   /* Subsystems */
@@ -88,6 +90,7 @@ public class RobotContainer {
     driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
+    runPresetRotation.onTrue(new InstantCommand(() -> _grabArm.setRotationTargetTest()));
 
     //rotationPPlus.onTrue(new InstantCommand(() -> _grabArm.rotationPPlus()));
     //rotationPMinus.onTrue(new InstantCommand(() -> _grabArm.rotationPMinus()));
