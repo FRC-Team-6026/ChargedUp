@@ -108,6 +108,10 @@ public class Swerve extends SubsystemBase {
     }
   }
 
+  public AHRS getGyro(){
+    return gyro;
+  }
+
   @Override
   public void periodic() {
     swerveOdometry.update(getYaw(), getPositions());
