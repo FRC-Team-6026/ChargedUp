@@ -241,7 +241,7 @@ public class GrabArm extends SubsystemBase {
             _targettedExtension = _stationaryExtension;
         } else if (extensionRatio != 0) {
             _isStationaryExtension=false;
-        }    
+        }
 
         if (!_isStationaryExtension && isPlayerExtension) {
             //Compensation Calculations
@@ -283,6 +283,10 @@ public class GrabArm extends SubsystemBase {
         _rotationController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
         _rotationController.setSmartMotionMaxAccel(Constants.GrabArm.maxRotationAccDps, 0);
         _rotationController.setSmartMotionMaxVelocity(Constants.GrabArm.maxRotationDps, 0);
+        _rotationController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 1);
+        _rotationController.setSmartMotionMaxAccel(Constants.GrabArm.maxAutoPositionRotationDpsAcc, 1);
+        _rotationController.setSmartMotionMaxVelocity(Constants.GrabArm.maxAutoPositionRotationDpsAcc, 1);
+
         _rotationMotor.burnFlash();
     }
 
@@ -304,6 +308,10 @@ public class GrabArm extends SubsystemBase {
         _extensionController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
         _extensionController.setSmartMotionMaxAccel(Constants.GrabArm.maxIpsAcc, 0);
         _extensionController.setSmartMotionMaxVelocity(Constants.GrabArm.maxIps, 0);
+        _extensionController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 1);
+        _extensionController.setSmartMotionMaxAccel(Constants.GrabArm.maxAutoPositionMaxIpsAcc, 1);
+        _extensionController.setSmartMotionMaxVelocity(Constants.GrabArm.maxAutoPositionMaxIps, 1);
+
         _extensionMotor.burnFlash();
     }
 
@@ -337,22 +345,25 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmExtensions {
-        Stowed {
+        Stowed(0) {
             @Override
             public GrabArmExtensions previous() {
                 return this;
             };
         },
-        Substation,
-        Floor,
-        Mid,
-        Top {
+        Substation(0),
+        Floor(0),
+        Mid(0),
+        Top(0) {
             @Override
             public GrabArmExtensions next() {
                 return this;
             };
         };
 
+        GrabArmExtensions(double extension){
+
+        }
         public GrabArmExtensions next() {
             // No bounds checking required here, because the last instance overrides
             return values()[ordinal() + 1];
@@ -364,24 +375,27 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmRotations {
-        Stowed {
+        Stowed (0) {
             @Override
             public GrabArmRotations previous() {
                 return this;
             };
         },
-        Substation,
-        TopCone,
-        TopCube,
-        MidCone,
-        MidCube,
-        Floor {
+        Substation (188),
+        TopCone(180),
+        TopCube(180),
+        MidCone(180),
+        MidCube(180),
+        Floor(180) {
             @Override
             public GrabArmRotations next() {
                 return this;
             };
         };
+        
+        GrabArmRotations(double rotation){
 
+        }
         public GrabArmRotations next() {
             // No bounds checking required here, because the last instance overrides
             return values()[ordinal() + 1];

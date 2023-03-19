@@ -184,6 +184,10 @@ public final class Constants {
     public static final double maxIpsAcc = 3.0;
     public static final double maxIpsExecution = maxIps / codeExecutionRate;
     public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
+    public static final double maxAutoPositionRotationDps = 60;
+    public static final double maxAutoPositionRotationDpsAcc = 30;
+    public static final double maxAutoPositionMaxIps = 6.0;
+    public static final double maxAutoPositionMaxIpsAcc = 5.0;
 
     public static final float rotationForwardSoftLimitDegrees = 188;
     public static final float extensionForwardSoftLimitInches = 9;
