@@ -227,9 +227,9 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension) {
             //Compensation Calculations
             double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-            //double tensionLB1stStage = (4 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            double tensionLB2ndStage = (7 - 3 * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            extensionStageCompensationCalculations(tensionLB2ndStage);
+            double tensionLB1stStage = (Constants.GrabArm.firstStageTension - Constants.GrabArm.firstStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            //double tensionLB2ndStage = (Constants.GrabArm.secondStageTension - Constants.GrabArm.secondStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+            extensionStageCompensationCalculations(tensionLB1stStage);
 
             //Extension Velocity Setting
             _extensionController.setReference(extensionIps, ControlType.kSmartMotion, 0, _compensationExtension, ArbFFUnits.kPercentOut);
