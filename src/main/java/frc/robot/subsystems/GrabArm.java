@@ -186,24 +186,24 @@ public class GrabArm extends SubsystemBase {
             _isStationaryRotation=false;
         }
 
-        if (!_isStationaryRotation) {
-            //Comensation Calculations
-            double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
-            double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
-            double inLbTorque = (5 * centerOfGrav * cosineCompensation);
-            double newtonMeterTorque = inLbTorque / 8.8507457673787;
-            double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
-            _compensationRotation = motorOutput / Constants.GrabArm.rotationStallTorque; // output / stall torque
+        //Comensation Calculations
+        double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
+        double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
+        double inLbTorque = (5 * centerOfGrav * cosineCompensation);
+        double newtonMeterTorque = inLbTorque / 8.8507457673787;
+        double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
+        _compensationRotation = motorOutput / Constants.GrabArm.rotationStallTorque; // output / stall torque
 
-            //Compensation Addition for Cone Mode
-            if (_isConeMode == true){
-                double conePivotLength = Constants.GrabArm.baseArmLength - 3 + _extensionEncoder.getPosition(); //Base Arm - into claw + arm extension ~= Cone Location relative to pivot
-                double inLbTorqueCone = Constants.GrabArm.coneWeightLb * conePivotLength * cosineCompensation;
-                double newtonMeterTorqueCone = inLbTorqueCone / 8.8507457673787;
-                double motorOutputCone = newtonMeterTorqueCone / Constants.GrabArm.rotationGearRatio;
-                _compensationRotation = _compensationRotation + (motorOutputCone / Constants.GrabArm.rotationStallTorque);
-            }
-           
+        //Compensation Addition for Cone Mode
+        if (_isConeMode == true){
+            double conePivotLength = Constants.GrabArm.baseArmLength - 3 + _extensionEncoder.getPosition(); //Base Arm - into claw + arm extension ~= Cone Location relative to pivot
+            double inLbTorqueCone = Constants.GrabArm.coneWeightLb * conePivotLength * cosineCompensation;
+            double newtonMeterTorqueCone = inLbTorqueCone / 8.8507457673787;
+            double motorOutputCone = newtonMeterTorqueCone / Constants.GrabArm.rotationGearRatio;
+            _compensationRotation = _compensationRotation + (motorOutputCone / Constants.GrabArm.rotationStallTorque);
+        }
+
+        if (!_isStationaryRotation) {           
             if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
                 _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
             }
@@ -222,14 +222,16 @@ public class GrabArm extends SubsystemBase {
             _stationaryExtension = _extensionEncoder.getPosition();
         } else if (extensionRatio != 0) {
             _isStationaryExtension=false;
-        }    
+        } 
+
+        //Compensation Calculations
+        double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
+        double tensionLB1stStage = (Constants.GrabArm.firstStageTension - Constants.GrabArm.firstStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+        //double tensionLB2ndStage = (Constants.GrabArm.secondStageTension - Constants.GrabArm.secondStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+        extensionStageCompensationCalculations(tensionLB1stStage);        
 
         if (!_isStationaryExtension) {
-            //Compensation Calculations
-            double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-            double tensionLB1stStage = (Constants.GrabArm.firstStageTension - Constants.GrabArm.firstStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            //double tensionLB2ndStage = (Constants.GrabArm.secondStageTension - Constants.GrabArm.secondStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-            extensionStageCompensationCalculations(tensionLB1stStage);
+ 
 
             //Extension Velocity Setting
             _extensionController.setReference(extensionIps, ControlType.kSmartMotion, 0, _compensationExtension, ArbFFUnits.kPercentOut);
