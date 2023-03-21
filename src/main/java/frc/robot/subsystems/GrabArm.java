@@ -56,10 +56,10 @@ public class GrabArm extends SubsystemBase {
         _extensionSupplier = extensionSupplier;
 
         _maxExtensions.put(GrabArmRotations.Substation, GrabArmExtensions.Substation);
-        _maxExtensions.put(GrabArmRotations.TopCone, GrabArmExtensions.Top);
-        _maxExtensions.put(GrabArmRotations.TopCube, GrabArmExtensions.Top);
-        _maxExtensions.put(GrabArmRotations.MidCone, GrabArmExtensions.Mid);
-        _maxExtensions.put(GrabArmRotations.MidCube, GrabArmExtensions.Mid);
+        _maxExtensions.put(GrabArmRotations.TopCone, GrabArmExtensions.TopCone);
+        _maxExtensions.put(GrabArmRotations.TopCube, GrabArmExtensions.TopCube);
+        _maxExtensions.put(GrabArmRotations.MidCone, GrabArmExtensions.MidCone);
+        _maxExtensions.put(GrabArmRotations.MidCube, GrabArmExtensions.MidCube);
         _maxExtensions.put(GrabArmRotations.Floor, GrabArmExtensions.Floor);
 
         _rotationEncoder = _rotationMotor.getEncoder();
@@ -108,6 +108,9 @@ public class GrabArm extends SubsystemBase {
         SmartDashboard.putNumber("rotation velocity", _rotationEncoder.getVelocity());
         SmartDashboard.putNumber("extension velocity", _extensionEncoder.getVelocity());
 
+        SmartDashboard.putString("SelectionRotation", _grabArmRotation.name());
+        SmartDashboard.putString("SelectionExtension", _grabArmExtension.name());
+
         if (_rotationLimitSwitch.isPressed()) {
             _rotationEncoder.setPosition(0);
             _stationaryRotation = 0;
@@ -131,6 +134,16 @@ public class GrabArm extends SubsystemBase {
         return runOnce(() -> { _stationaryExtension = 0; })
             .andThen(Commands.waitUntil(() -> _extensionEncoder.getPosition() <= 1))
             .andThen(() -> _stationaryRotation = 0);
+    }
+
+    public void cycleNext() {
+        _grabArmRotation = _grabArmRotation.next();
+        _grabArmExtension = _grabArmExtension.next();
+    }
+
+    public void cyclePrevious() {
+        _grabArmRotation = _grabArmRotation.previous();
+        _grabArmExtension = _grabArmExtension.previous();
     }
 
     public void goToNextRotation() {
@@ -158,8 +171,8 @@ public class GrabArm extends SubsystemBase {
     }
 
     public void goToPosition(GrabArmExtensions extension, GrabArmRotations rotation) {
-        //to be implemented
-        //drive extension motor and rotation motor by position to the positions specified
+        _stationaryRotation = _grabArmRotation.rotation;
+        _stationaryExtension = _grabArmExtension.extension;
     }
 
     private void manualControls() {
@@ -331,18 +344,20 @@ public class GrabArm extends SubsystemBase {
             public GrabArmExtensions previous() {
                 return this;
             };
-        },
-        Floor(0),
-        Mid(0),
-        Top(0) {
+        },TopCone(0),
+        TopCube(0),
+        MidCone(0),
+        MidCube(0),
+        Floor(0) {
             @Override
             public GrabArmExtensions next() {
                 return this;
             };
         };
 
+        private final double extension;
         GrabArmExtensions(double extension){
-
+            this.extension = extension;
         }
         public GrabArmExtensions next() {
             // No bounds checking required here, because the last instance overrides
@@ -371,9 +386,9 @@ public class GrabArm extends SubsystemBase {
                 return this;
             };
         };
-        
+        private final double rotation;
         GrabArmRotations(double rotation){
-
+            this.rotation = rotation;
         }
         public GrabArmRotations next() {
             // No bounds checking required here, because the last instance overrides
