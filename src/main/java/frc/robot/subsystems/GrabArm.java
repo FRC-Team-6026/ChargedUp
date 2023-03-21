@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.Hashtable;
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.CANSparkMax;
@@ -26,9 +25,7 @@ import frc.robot.Constants;
 
 public class GrabArm extends SubsystemBase {
     private final Solenoid _grabberSolenoid = new Solenoid(14, PneumaticsModuleType.REVPH, 1);
-    private GrabArmRotations _grabArmRotation = GrabArmRotations.Substation;
-    private GrabArmExtensions _grabArmExtension = GrabArmExtensions.Substation;
-    private final Hashtable<GrabArmRotations,GrabArmExtensions> _maxExtensions = new Hashtable<GrabArm.GrabArmRotations,GrabArm.GrabArmExtensions>();
+    private GrabArmPositions _grabArmPositions = GrabArmPositions.Substation;
     private final CANSparkMax _rotationMotor = new CANSparkMax(15, MotorType.kBrushless);
     private final CANSparkMax _extensionMotor = new CANSparkMax(16, MotorType.kBrushless);
     private final RelativeEncoder _rotationEncoder;
@@ -54,13 +51,6 @@ public class GrabArm extends SubsystemBase {
 
         _rotationSupplier = rotationSupplier;
         _extensionSupplier = extensionSupplier;
-
-        _maxExtensions.put(GrabArmRotations.Substation, GrabArmExtensions.Substation);
-        _maxExtensions.put(GrabArmRotations.TopCone, GrabArmExtensions.TopCone);
-        _maxExtensions.put(GrabArmRotations.TopCube, GrabArmExtensions.TopCube);
-        _maxExtensions.put(GrabArmRotations.MidCone, GrabArmExtensions.MidCone);
-        _maxExtensions.put(GrabArmRotations.MidCube, GrabArmExtensions.MidCube);
-        _maxExtensions.put(GrabArmRotations.Floor, GrabArmExtensions.Floor);
 
         _rotationEncoder = _rotationMotor.getEncoder();
         _extensionEncoder = _extensionMotor.getEncoder();
@@ -108,8 +98,7 @@ public class GrabArm extends SubsystemBase {
         SmartDashboard.putNumber("rotation velocity", _rotationEncoder.getVelocity());
         SmartDashboard.putNumber("extension velocity", _extensionEncoder.getVelocity());
 
-        SmartDashboard.putString("SelectionRotation", _grabArmRotation.name());
-        SmartDashboard.putString("SelectionExtension", _grabArmExtension.name());
+        SmartDashboard.putString("SelectionRotation", _grabArmPositions.name());
 
         if (_rotationLimitSwitch.isPressed()) {
             _rotationEncoder.setPosition(0);
@@ -137,42 +126,16 @@ public class GrabArm extends SubsystemBase {
     }
 
     public void cycleNext() {
-        _grabArmRotation = _grabArmRotation.next();
-        _grabArmExtension = _grabArmExtension.next();
+        _grabArmPositions = _grabArmPositions.next();
     }
 
     public void cyclePrevious() {
-        _grabArmRotation = _grabArmRotation.previous();
-        _grabArmExtension = _grabArmExtension.previous();
+        _grabArmPositions = _grabArmPositions.previous();
     }
 
-    public void goToNextRotation() {
-        _grabArmRotation = _grabArmRotation.next();
-        limitExstensionToMax();
-        goToCurrentPositions();
-    }
-
-    public void goToPreviousRotation() {
-        _grabArmRotation = _grabArmRotation.previous();
-        limitExstensionToMax();
-        goToCurrentPositions();
-    }
-
-    public void goToNextExtension() {
-        _grabArmExtension = _grabArmExtension.next();
-        limitExstensionToMax();
-        goToCurrentPositions();
-    }
-
-    public void goToPreviousExtension() {
-        _grabArmExtension = _grabArmExtension.previous();
-        limitExstensionToMax();
-        goToCurrentPositions();
-    }
-
-    public void goToPosition(GrabArmExtensions extension, GrabArmRotations rotation) {
-        _stationaryRotation = _grabArmRotation.rotation;
-        _stationaryExtension = _grabArmExtension.extension;
+    public void goToPosition(GrabArmPositions rotation) {
+        _stationaryRotation = _grabArmPositions.rotation;
+        _stationaryExtension = _grabArmPositions.extension;
     }
 
     private void manualControls() {
@@ -302,24 +265,12 @@ public class GrabArm extends SubsystemBase {
         _extensionMotor.burnFlash();
     }
 
-    private void goToCurrentPositions() {
-        goToPosition(_grabArmExtension, _grabArmRotation);
-    }
-
     private void disengageServo(){
         _ratchetServo.setAngle(90);
     }
 
     private void engageServo(){
         _ratchetServo.setAngle(30);
-    }
-
-    private void limitExstensionToMax()
-    {
-        var maxExtension = _maxExtensions.get(_grabArmRotation);
-        if (maxExtension.ordinal() < _grabArmExtension.ordinal()) {
-            _grabArmExtension = maxExtension;
-        }
     }
 
     private void extensionStageCompensationCalculations(double tension){
@@ -338,63 +289,34 @@ public class GrabArm extends SubsystemBase {
         _stationaryRotation = 30;
     }
 
-    public enum GrabArmExtensions {
-        Substation(0) {
+    public enum GrabArmPositions {
+        Substation (0,0) {
             @Override
-            public GrabArmExtensions previous() {
-                return this;
-            };
-        },TopCone(0),
-        TopCube(0),
-        MidCone(0),
-        MidCube(0),
-        Floor(0) {
-            @Override
-            public GrabArmExtensions next() {
-                return this;
-            };
-        };
-
-        private final double extension;
-        GrabArmExtensions(double extension){
-            this.extension = extension;
-        }
-        public GrabArmExtensions next() {
-            // No bounds checking required here, because the last instance overrides
-            return values()[ordinal() + 1];
-        }
-        public GrabArmExtensions previous() {
-            // No bounds checking required here, because the first instance overrides
-            return values()[ordinal() - 1];
-        }
-    }
-
-    public enum GrabArmRotations {
-        Substation (0) {
-            @Override
-            public GrabArmRotations previous() {
+            public GrabArmPositions previous() {
                 return this;
             };
         },
-        TopCone(180),
-        TopCube(180),
-        MidCone(180),
-        MidCube(180),
-        Floor(180) {
+        TopCone(180,0),
+        TopCube(180,0),
+        MidCone(180,0),
+        MidCube(180,0),
+        Floor(180,0) {
             @Override
-            public GrabArmRotations next() {
+            public GrabArmPositions next() {
                 return this;
             };
         };
         private final double rotation;
-        GrabArmRotations(double rotation){
+        private final double extension;
+        GrabArmPositions(double rotation, double extension){
             this.rotation = rotation;
+            this.extension = extension;
         }
-        public GrabArmRotations next() {
+        public GrabArmPositions next() {
             // No bounds checking required here, because the last instance overrides
             return values()[ordinal() + 1];
         }
-        public GrabArmRotations previous() {
+        public GrabArmPositions previous() {
             // No bounds checking required here, because the first instance overrides
             return values()[ordinal() - 1];
         }
