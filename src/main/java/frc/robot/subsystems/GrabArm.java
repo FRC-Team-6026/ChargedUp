@@ -18,14 +18,16 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class GrabArm extends SubsystemBase {
     private final Solenoid _grabberSolenoid = new Solenoid(14, PneumaticsModuleType.REVPH, 1);
-    private GrabArmRotations _grabArmRotation = GrabArmRotations.Stowed;
-    private GrabArmExtensions _grabArmExtension = GrabArmExtensions.Stowed;
+    private GrabArmRotations _grabArmRotation = GrabArmRotations.Substation;
+    private GrabArmExtensions _grabArmExtension = GrabArmExtensions.Substation;
     private final Hashtable<GrabArmRotations,GrabArmExtensions> _maxExtensions = new Hashtable<GrabArm.GrabArmRotations,GrabArm.GrabArmExtensions>();
     private final CANSparkMax _rotationMotor = new CANSparkMax(15, MotorType.kBrushless);
     private final CANSparkMax _extensionMotor = new CANSparkMax(16, MotorType.kBrushless);
@@ -53,7 +55,6 @@ public class GrabArm extends SubsystemBase {
         _rotationSupplier = rotationSupplier;
         _extensionSupplier = extensionSupplier;
 
-        _maxExtensions.put(GrabArmRotations.Stowed, GrabArmExtensions.Stowed);
         _maxExtensions.put(GrabArmRotations.Substation, GrabArmExtensions.Substation);
         _maxExtensions.put(GrabArmRotations.TopCone, GrabArmExtensions.Top);
         _maxExtensions.put(GrabArmRotations.TopCube, GrabArmExtensions.Top);
@@ -80,6 +81,7 @@ public class GrabArm extends SubsystemBase {
             //when interrupted set PID controls to voltage and default to 0 to stop
             interrupted ->
             {
+            engageServo();
             _rotationController.setReference(0, ControlType.kVoltage);
             _extensionController.setReference(0, ControlType.kVoltage);
             },
@@ -125,10 +127,10 @@ public class GrabArm extends SubsystemBase {
         _grabberSolenoid.set(true);
     }
 
-    public void goToStowedPosition() {
-        _grabArmRotation = GrabArmRotations.Stowed;
-        _grabArmExtension = GrabArmExtensions.Stowed;
-        goToCurrentPositions();
+    public CommandBase goToStowedPosition(){
+        return runOnce(() -> { _stationaryExtension = 0; })
+            .andThen(Commands.waitUntil(() -> _extensionEncoder.getPosition() <= 1))
+            .andThen(() -> _stationaryRotation = 0);
     }
 
     public void goToNextRotation() {
@@ -172,12 +174,6 @@ public class GrabArm extends SubsystemBase {
 
         double extensionHeight = (_extensionEncoder.getPosition() + Constants.GrabArm.baseArmLength) * Math.sin(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees);
 
-        if (extensionRatio != 0) {
-            _ratchetServo.setAngle(90);
-        } else {
-            _ratchetServo.setAngle(30);
-        }
-
         //set the stationary rotation when the arm comes to a stop.
         if (rotationRatio == 0 && !_isStationaryRotation) {
             _isStationaryRotation = true;
@@ -185,6 +181,8 @@ public class GrabArm extends SubsystemBase {
         } else if (rotationRatio != 0) {
             _isStationaryRotation=false;
         }
+
+        disengageServo();
 
         //Comensation Calculations
         double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
@@ -295,6 +293,14 @@ public class GrabArm extends SubsystemBase {
         goToPosition(_grabArmExtension, _grabArmRotation);
     }
 
+    private void disengageServo(){
+        _ratchetServo.setAngle(90);
+    }
+
+    private void engageServo(){
+        _ratchetServo.setAngle(30);
+    }
+
     private void limitExstensionToMax()
     {
         var maxExtension = _maxExtensions.get(_grabArmRotation);
@@ -320,13 +326,12 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmExtensions {
-        Stowed(0) {
+        Substation(0) {
             @Override
             public GrabArmExtensions previous() {
                 return this;
             };
         },
-        Substation(0),
         Floor(0),
         Mid(0),
         Top(0) {
@@ -350,13 +355,12 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmRotations {
-        Stowed (0) {
+        Substation (0) {
             @Override
             public GrabArmRotations previous() {
                 return this;
             };
         },
-        Substation (188),
         TopCone(180),
         TopCube(180),
         MidCone(180),
