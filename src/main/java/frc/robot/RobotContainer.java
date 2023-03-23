@@ -108,4 +108,8 @@ public class RobotContainer {
     // An ExampleCommand will run in autonomous
     return new ExampleAuto(_swerve);
   }
+
+  public void disabled(){
+    _grabArm.engageServo();
+  }
 }

@@ -45,6 +45,8 @@ public class GrabArm extends SubsystemBase {
     private double _compensationRotation = 0;
     private double _compensationExtension = 0;
     private boolean _isConeMode = false;
+    private double _targetExtension = 0;
+    private double _targetRotation = 0;
 
     public GrabArm(DoubleSupplier rotationSupplier, DoubleSupplier extensionSupplier) {
         super();
@@ -121,8 +123,8 @@ public class GrabArm extends SubsystemBase {
 
     public CommandBase goToStowedPosition(){
         return runOnce(() -> { _stationaryExtension = 0; })
-            .andThen(Commands.waitUntil(() -> _extensionEncoder.getPosition() <= 1))
-            .andThen(() -> _stationaryRotation = 0);
+            .andThen(Commands.waitUntil(() -> _extensionEncoder.getPosition() <= _stationaryExtension + 1))
+            .andThen(() -> {if (_stationaryExtension == 0) _stationaryRotation = 0;});
     }
 
     public void cycleNext() {
@@ -133,7 +135,7 @@ public class GrabArm extends SubsystemBase {
         _grabArmPositions = _grabArmPositions.previous();
     }
 
-    public void goToPosition(GrabArmPositions rotation) {
+    public void goToPosition() {
         _stationaryRotation = _grabArmPositions.rotation;
         _stationaryExtension = _grabArmPositions.extension;
     }
@@ -145,8 +147,8 @@ public class GrabArm extends SubsystemBase {
         //cubing inputs to give better control over the low range.
         rotationRatio = rotationRatio * rotationRatio * rotationRatio;
         extensionRatio = extensionRatio * extensionRatio * extensionRatio;      
-        var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationDps;
-        var extensionIps = extensionRatio * Constants.GrabArm.maxIps;
+        var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationExecution;
+        var extensionIps = extensionRatio * Constants.GrabArm.maxIpsExecution;
 
         double extensionHeight = (_extensionEncoder.getPosition() + Constants.GrabArm.baseArmLength) * Math.sin(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees);
 
@@ -154,6 +156,7 @@ public class GrabArm extends SubsystemBase {
         if (rotationRatio == 0 && !_isStationaryRotation) {
             _isStationaryRotation = true;
             _stationaryRotation = _rotationEncoder.getPosition();
+            _targetRotation = _stationaryRotation;
         } else if (rotationRatio != 0) {
             _isStationaryRotation=false;
         }
@@ -181,9 +184,9 @@ public class GrabArm extends SubsystemBase {
             if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
                 _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
             }
-
+            _targetRotation = _targetRotation + rotationSpeedDps;
             //Position Setting
-            _rotationController.setReference(rotationSpeedDps, ControlType.kSmartVelocity, 0, _compensationRotation, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(_targetRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
             
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
@@ -205,13 +208,12 @@ public class GrabArm extends SubsystemBase {
         extensionStageCompensationCalculations(tensionLB1stStage);        
 
         if (!_isStationaryExtension) {
- 
-
             //Extension Velocity Setting
-            _extensionController.setReference(extensionIps, ControlType.kSmartMotion, 0, _compensationExtension, ArbFFUnits.kPercentOut);
+            _targetExtension = _targetExtension + extensionIps;
+            _extensionController.setReference(_targetExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
-            _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
+            _extensionController.setReference(_stationaryExtension, ControlType.kPosition,1, _compensationExtension, ArbFFUnits.kPercentOut);
         }
     }
 
@@ -269,7 +271,7 @@ public class GrabArm extends SubsystemBase {
         _ratchetServo.setAngle(90);
     }
 
-    private void engageServo(){
+    public void engageServo(){
         _ratchetServo.setAngle(30);
     }
 

@@ -167,15 +167,15 @@ public final class Constants {
     public static final double rotationKI = 0.0;
     public static final double rotationKD = 0.025;
     public static final double rotationKFF = 0.0;
-    public static final double rotationMin = -65.0;
-    public static final double rotationMax = 65.0;
+    public static final double rotationMin = -.65;
+    public static final double rotationMax = .65;
 
     public static final double extensionKP = 0.05;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
-    public static final double extensionMin = -15.0;
-    public static final double extensionMax = 5.0;
+    public static final double extensionMin = -.15;
+    public static final double extensionMax = .05;
 
     public static final double codeExecutionRate = 50.0;
     public static final double codeExecutionRateTime = 1.0 / codeExecutionRate;
@@ -204,6 +204,6 @@ public final class Constants {
     public static final double coneWeightLb = 1.4375;
 
     public static final double rotationStallTorque = 2.6;
-    public static final double extensionStallTorque = .97;
+    public static final double extensionStallTorque = 2.6;
   }
 }
