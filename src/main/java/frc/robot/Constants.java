@@ -203,6 +203,10 @@ public final class Constants {
     public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
     public static final double coneWeightLb = 1.4375;
 
+    public static final double rotationPositionSettingToleranceDegrees = 3;
+    public static final double extensionPositionSettingToleranceInches = 0.5;
+    public static final double extensionTolerance = 0.1;
+
     public static final double rotationStallTorque = 2.6;
     public static final double extensionStallTorque = 2.6;
   }
