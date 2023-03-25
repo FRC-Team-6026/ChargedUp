@@ -91,11 +91,6 @@ public class RobotContainer {
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
     runPresetRotation.onTrue(new InstantCommand(() -> _grabArm.setRotationTargetTest()));
-
-    //rotationPPlus.onTrue(new InstantCommand(() -> _grabArm.rotationPPlus()));
-    //rotationPMinus.onTrue(new InstantCommand(() -> _grabArm.rotationPMinus()));
-    //extensionPPlus.onTrue(new InstantCommand(() -> _grabArm.extensionPPlus()));
-    //extensionPMinus.onTrue(new InstantCommand(() -> _grabArm.extensionPMinus()));
   }
 
   /**
@@ -107,9 +102,5 @@ public class RobotContainer {
     _swerve.resetToAbsolute();
     // An ExampleCommand will run in autonomous
     return new ExampleAuto(_swerve);
-  }
-
-  public void disabled(){
-    _grabArm.engageServo();
   }
 }

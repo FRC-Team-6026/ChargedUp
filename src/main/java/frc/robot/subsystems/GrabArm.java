@@ -163,27 +163,17 @@ public class GrabArm extends SubsystemBase {
 
         disengageServo();
 
-        //Comensation Calculations
+        //Comensation Calculations Rotation
         double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
         double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
-        double inLbTorque = (5 * centerOfGrav * cosineCompensation);
-        double newtonMeterTorque = inLbTorque / 8.8507457673787;
-        double motorOutput = newtonMeterTorque / Constants.GrabArm.rotationGearRatio;
-        _compensationRotation = motorOutput / Constants.GrabArm.rotationStallTorque; // output / stall torque
+        double inLbTorqueR = (5 * centerOfGrav * cosineCompensation);
+        double newtonMeterTorqueR = inLbTorqueR / 8.8507457673787;
+        double motorOutputR = newtonMeterTorqueR / Constants.GrabArm.rotationGearRatio;
+        _compensationRotation = motorOutputR / Constants.GrabArm.rotationStallTorque; // output / stall torque
 
         //Compensation Addition for Cone Mode
-        if (_isConeMode == true){
-            double conePivotLength = Constants.GrabArm.baseArmLength - 3 + _extensionEncoder.getPosition(); //Base Arm - into claw + arm extension ~= Cone Location relative to pivot
-            double inLbTorqueCone = Constants.GrabArm.coneWeightLb * conePivotLength * cosineCompensation;
-            double newtonMeterTorqueCone = inLbTorqueCone / 8.8507457673787;
-            double motorOutputCone = newtonMeterTorqueCone / Constants.GrabArm.rotationGearRatio;
-            _compensationRotation = _compensationRotation + (motorOutputCone / Constants.GrabArm.rotationStallTorque);
-        }
 
         if (!_isStationaryRotation) {           
-            if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
-                _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
-            }
             _targetRotation = _targetRotation + rotationSpeedDps;
             //Position Setting
             _rotationController.setReference(_targetRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
@@ -203,9 +193,15 @@ public class GrabArm extends SubsystemBase {
 
         //Compensation Calculations
         double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-        double tensionLB1stStage = (Constants.GrabArm.firstStageTension - Constants.GrabArm.firstStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-        //double tensionLB2ndStage = (Constants.GrabArm.secondStageTension - Constants.GrabArm.secondStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
-        extensionStageCompensationCalculations(tensionLB1stStage);        
+        double tensionFromSprings = (Constants.GrabArm.firstStageTension - Constants.GrabArm.firstStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+        double inLBTorqueE = Constants.GrabArm.spoolRadius * tensionFromSprings;
+        double newtonMeterTorqueE = inLBTorqueE / 8.8507457673787;
+        double motorOutputE = newtonMeterTorqueE / Constants.GrabArm.extensionGearRatio;
+        _compensationExtension = - motorOutputE / Constants.GrabArm.extensionStallTorque; // output / stall torque     
+        
+        if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
+            _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
+        }
 
         if (!_isStationaryExtension) {
             //Extension Velocity Setting
@@ -273,14 +269,6 @@ public class GrabArm extends SubsystemBase {
 
     public void engageServo(){
         _ratchetServo.setAngle(30);
-    }
-
-    private void extensionStageCompensationCalculations(double tension){
-        double inLBTorque = Constants.GrabArm.spoolRadius * tension;
-        double newtonMeterTorque = inLBTorque / 8.8507457673787;
-        double motorOutput = newtonMeterTorque / Constants.GrabArm.extensionGearRatio;
-        _compensationExtension = - motorOutput / Constants.GrabArm.extensionStallTorque; // output / stall torque
-
     }
 
     public void isCone(){
