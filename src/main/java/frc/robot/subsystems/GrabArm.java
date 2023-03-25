@@ -146,6 +146,8 @@ public class GrabArm extends SubsystemBase {
             .andThen(() -> {
                 _isCommanded = false;
                 _isCommandedRotation = false;
+                _targetRotation = _rotationEncoder.getPosition();
+                _targetExtension = _extensionEncoder.getPosition();
             });
     }
 
@@ -160,12 +162,13 @@ public class GrabArm extends SubsystemBase {
                 _isCommandedRotation = false;
                 _isCommandedExtension = true;
                 _stationaryExtension = _grabArmPositions.extension;
-                _targetExtension = _stationaryExtension;
             })
             .andThen(Commands.waitUntil(() -> MathUtil.applyDeadband(_rotationEncoder.getPosition() - _stationaryRotation, Constants.GrabArm.rotationPositionSettingToleranceDegrees) == 0 || !_isStationaryRotation))
             .andThen(() -> {
                 _isCommanded = false;
                 _isCommandedExtension = false;
+                _targetRotation = _rotationEncoder.getPosition();
+                _targetExtension = _extensionEncoder.getPosition();
             });
     }
 
@@ -245,12 +248,11 @@ public class GrabArm extends SubsystemBase {
         } 
 
         //Compensation Calculations
-        double armAngle = _rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees;
-        double tensionFromSprings = (Constants.GrabArm.secondStageTension - Constants.GrabArm.firstStageAprxWeight * Math.sin(Math.toRadians(armAngle))); //Spring force - (Weight * sin (armAngle))
+        double tensionFromSprings = (Constants.GrabArm.firstStageTension); //Spring force
         double inLBTorqueE = Constants.GrabArm.spoolRadius * tensionFromSprings;
         double newtonMeterTorqueE = inLBTorqueE / 8.8507457673787;
         double motorOutputE = newtonMeterTorqueE / Constants.GrabArm.extensionGearRatio;
-        _compensationExtension = - motorOutputE / Constants.GrabArm.extensionStallTorque; // output / stall torque     
+        _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.75; // output / stall torque     
         
         if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
             _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
@@ -265,8 +267,14 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension) {
             //Extension Velocity Setting
             _targetExtension = _targetExtension + extensionIps;
-            if(_targetExtension > _extensionEncoder.getPosition()){
-                _compensationExtension = 0;
+            if (_targetExtension < 0){
+                _targetExtension = 0;
+            }
+            if ( _targetExtension < _extensionEncoder.getPosition() && _extensionEncoder.getPosition() < 10.3){
+                    _compensationExtension = _compensationExtension * .5;
+            }
+            if ( _targetExtension > _extensionEncoder.getPosition() && _extensionEncoder.getPosition() > 10){
+                    _compensationExtension = _compensationExtension * .5;
             }
             _extensionController.setReference(_targetExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut); // Movement requires a lesser feed foward/ Not calculated
         } else {
