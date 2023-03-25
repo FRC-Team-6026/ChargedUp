@@ -142,7 +142,7 @@ public final class Constants {
     public static final double spoolRadius = spoolDiameter/2;
     public static final double firstStageTension = 7;
     public static final double secondStageTension = 4;
-    public static final double firstStageAprxWeight = 10;
+    public static final double firstStageAprxWeight = 5;
     public static final double secondStageAprxWeight = 3;
 
     public static final double stickDeadband = 0.05;
