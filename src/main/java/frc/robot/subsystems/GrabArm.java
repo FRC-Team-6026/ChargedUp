@@ -44,7 +44,6 @@ public class GrabArm extends SubsystemBase {
     private double _stationaryExtension = 0;
     private double _compensationRotation = 0;
     private double _compensationExtension = 0;
-    private boolean _isConeMode = false;
     private double _targetExtension = 0;
     private double _targetRotation = 0;
 
@@ -161,8 +160,6 @@ public class GrabArm extends SubsystemBase {
             _isStationaryRotation=false;
         }
 
-        disengageServo();
-
         //Comensation Calculations Rotation
         double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
         double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
@@ -201,6 +198,12 @@ public class GrabArm extends SubsystemBase {
         
         if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
             _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
+        }
+
+        if(_targetExtension != _extensionEncoder.getPosition() || _stationaryExtension > _extensionEncoder.getPosition()){
+            disengageServo();
+        } else {
+            engageServo();
         }
 
         if (!_isStationaryExtension) {
@@ -269,10 +272,6 @@ public class GrabArm extends SubsystemBase {
 
     public void engageServo(){
         _ratchetServo.setAngle(30);
-    }
-
-    public void isCone(){
-        _isConeMode = !_isConeMode;
     }
 
     public void setRotationTargetTest(){
