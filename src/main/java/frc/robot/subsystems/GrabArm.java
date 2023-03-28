@@ -106,8 +106,14 @@ public class GrabArm extends SubsystemBase {
 
         SmartDashboard.putNumber("target rotation", _targetRotation);
         SmartDashboard.putNumber("target extension", _targetExtension);
+        SmartDashboard.putNumber("stationary rotation", _stationaryRotation);
+        SmartDashboard.putNumber("stationary extension", _stationaryExtension);
 
         SmartDashboard.putString("SelectionRotation", _grabArmPositions.name());
+
+        SmartDashboard.putBoolean("isCommanded", _isCommanded);
+        SmartDashboard.putBoolean("isRotationCommanded", _isCommandedRotation);
+        SmartDashboard.putBoolean("isExtensionCommanded", _isCommanded);
 
         if (_rotationLimitSwitch.isPressed()) {
             _rotationEncoder.setPosition(0);
@@ -136,16 +142,16 @@ public class GrabArm extends SubsystemBase {
             _isCommandedExtension = true;
             _stationaryExtension = 0;
             })
-            .andThen(Commands.waitUntil(() -> MathUtil.applyDeadband(_extensionEncoder.getPosition() - _stationaryExtension, Constants.GrabArm.extensionPositionSettingToleranceInches) == 0 || !_isStationaryExtension))
+            .andThen(Commands.waitUntil(() -> MathUtil.applyDeadband(_extensionEncoder.getPosition(), Constants.GrabArm.extensionPositionSettingToleranceInches) == 0 || !_isStationaryExtension))
             .andThen(() -> {
                 _isCommandedExtension = false;
-                _isCommandedRotation = true;
-                _stationaryRotation = 0;
+                ///_isCommandedRotation = true;
+                ///_stationaryRotation = 0;
             })
-            .andThen(Commands.waitUntil(() -> MathUtil.applyDeadband(_rotationEncoder.getPosition() - _stationaryRotation, Constants.GrabArm.rotationPositionSettingToleranceDegrees) == 0 || !_isStationaryRotation))
+            ///.andThen(Commands.waitUntil(() -> MathUtil.applyDeadband(_rotationEncoder.getPosition() - _stationaryRotation, Constants.GrabArm.rotationPositionSettingToleranceDegrees) == 0 || !_isStationaryRotation))
             .andThen(() -> {
                 _isCommanded = false;
-                _isCommandedRotation = false;
+                //_isCommandedRotation = false;
                 _targetRotation = _rotationEncoder.getPosition();
                 _targetExtension = _extensionEncoder.getPosition();
             });
@@ -267,9 +273,6 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension) {
             //Extension Velocity Setting
             _targetExtension = _targetExtension + extensionIps;
-            if (_targetExtension < 0){
-                _targetExtension = 0;
-            }
             if ( _targetExtension < _extensionEncoder.getPosition() && _extensionEncoder.getPosition() < 10.3){
                     _compensationExtension = _compensationExtension * .5;
             }
@@ -278,9 +281,15 @@ public class GrabArm extends SubsystemBase {
             }
             _extensionController.setReference(_targetExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut); // Movement requires a lesser feed foward/ Not calculated
         } else {
+            if ( _stationaryExtension < _extensionEncoder.getPosition() && _extensionEncoder.getPosition() < 10.3){
+                _compensationExtension = _compensationExtension * .5;
+            }
+            if ( _stationaryExtension > _extensionEncoder.getPosition() && _extensionEncoder.getPosition() > 10){
+                _compensationExtension = _compensationExtension * .5;
+            }
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             if(_isCommandedExtension){
-                _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
+                _extensionController.setReference(_stationaryExtension, ControlType.kPosition,1, _compensationExtension, ArbFFUnits.kPercentOut);
             } else {
                 _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
             }
@@ -350,7 +359,7 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmPositions {
-        Substation (180,0) {
+        Substation (172,12.3) {
             @Override
             public GrabArmPositions previous() {
                 return this;

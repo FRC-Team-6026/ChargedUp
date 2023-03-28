@@ -170,12 +170,12 @@ public final class Constants {
     public static final double rotationMin = -.65;
     public static final double rotationMax = .65;
 
-    public static final double extensionKP = 0.05;
+    public static final double extensionKP = 0.07;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
     public static final double extensionMin = -.15;
-    public static final double extensionMax = .05;
+    public static final double extensionMax = .10;
 
     public static final double codeExecutionRate = 50.0;
     public static final double codeExecutionRateTime = 1.0 / codeExecutionRate;
@@ -184,7 +184,7 @@ public final class Constants {
     public static final double maxRotationAccDps = 45.0;
     public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
     public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
-    public static final double maxIps = 5.0;
+    public static final double maxIps = 7.0;
     public static final double maxIpsAcc = 3.0;
     public static final double maxIpsExecution = maxIps / codeExecutionRate;
     public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
@@ -194,7 +194,7 @@ public final class Constants {
     public static final double maxAutoPositionMaxIpsAcc = 5.0;
 
     public static final float rotationForwardSoftLimitDegrees = 188;
-    public static final float extensionForwardSoftLimitInches = 9;
+    public static final float extensionForwardSoftLimitInches = 19;
 
     public static final double rotationOffsetinDegrees = 27;
     public static final double heightLimit = 72; // Max Height Minus 6''

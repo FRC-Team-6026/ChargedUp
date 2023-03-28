@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -54,7 +52,10 @@ public class RobotContainer {
       new JoystickButton(operator, XboxController.Button.kY.value);
   private final JoystickButton resetOdometry = 
       new JoystickButton(driver, XboxController.Button.kA.value);
+  private final JoystickButton stow = 
+      new JoystickButton(operator, XboxController.Button.kA.value);
   private boolean robotCentric = false;
+
 
   /* Subsystems */
   private final Swerve _swerve = new Swerve();
@@ -91,11 +92,12 @@ public class RobotContainer {
     }));
     openGrabber.onTrue(new InstantCommand(() -> _grabArm.openGrabber()));
     closeGrabber.onTrue(new InstantCommand(() -> _grabArm.closeGrabber()));
-    driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
-    driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
-    driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
+    //driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
+    //driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
+    //driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
     runPresetRotation.onTrue(new InstantCommand(() -> _grabArm.setRotationTargetTest()));
-    resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetOdometry(new Pose2d(0.0,0.0,new Rotation2d(0)))));
+    resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
+    stow.onTrue(_grabArm.goToStowedPosition());
   }
 
   /**
