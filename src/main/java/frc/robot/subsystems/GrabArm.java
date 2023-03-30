@@ -262,7 +262,7 @@ public class GrabArm extends SubsystemBase {
         double inLBTorqueE = Constants.GrabArm.spoolRadius * tensionFromSprings;
         double newtonMeterTorqueE = inLBTorqueE / 8.8507457673787;
         double motorOutputE = newtonMeterTorqueE / Constants.GrabArm.extensionGearRatio;
-        _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.75; // output / stall torque     
+        _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.65; // output / stall torque     
         
         if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
             _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
@@ -294,7 +294,7 @@ public class GrabArm extends SubsystemBase {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             if(_isCommandedExtension){
                 _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
-            } else if(_isStationaryExtension) {
+            } else {
                 _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
             }
         }
