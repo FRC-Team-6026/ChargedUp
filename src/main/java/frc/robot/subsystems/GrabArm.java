@@ -71,19 +71,23 @@ public class GrabArm extends SubsystemBase {
         _stationaryRotation = _rotationEncoder.getPosition();
         _stationaryExtension = _extensionEncoder.getPosition();
 
-        this.setDefaultCommand(new FunctionalCommand(() -> {/*do nothing on init*/},
-            // do arcade drive by default
-            () -> {manualControls();},
-            //when interrupted set PID controls to voltage and default to 0 to stop
-            interrupted ->
-            {
-            engageServo();
-            _rotationController.setReference(0, ControlType.kVoltage);
-            _extensionController.setReference(0, ControlType.kVoltage);
-            },
-            //never end
-            () -> {return false;},
-            this));
+        this.setDefaultCommand(controlLoop());
+    }
+
+    private FunctionalCommand controlLoop(){
+    return new FunctionalCommand(() -> {/*do nothing on init*/},
+    // do arcade drive by default
+    () -> {manualControls();},
+    //when interrupted set PID controls to voltage and default to 0 to stop
+    interrupted ->
+    {
+    engageServo();
+    _rotationController.setReference(0, ControlType.kVoltage);
+    _extensionController.setReference(0, ControlType.kVoltage);
+    },
+    //never end
+    () -> {return false;},
+    this);
     }
 
     @Override
@@ -137,7 +141,7 @@ public class GrabArm extends SubsystemBase {
     }
 
     public CommandBase goToStowedPosition(){
-        return runOnce(() -> {
+        return Commands.runOnce(() -> {
             _isCommanded = true;
             _isCommandedExtension = true;
             _stationaryExtension = 0;
@@ -158,7 +162,7 @@ public class GrabArm extends SubsystemBase {
     }
 
     public CommandBase goToPosition(){
-        return runOnce(() -> {
+        return Commands.runOnce(() -> {
             _isCommanded = true;
             _isCommandedRotation = true;
             _stationaryRotation = _grabArmPositions.rotation;
@@ -289,8 +293,8 @@ public class GrabArm extends SubsystemBase {
             }
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             if(_isCommandedExtension){
-                _extensionController.setReference(_stationaryExtension, ControlType.kPosition,1, _compensationExtension, ArbFFUnits.kPercentOut);
-            } else {
+                _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
+            } else if(_isStationaryExtension) {
                 _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
             }
         }
