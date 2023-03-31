@@ -142,6 +142,7 @@ public final class Constants {
     public static final double spoolRadius = spoolDiameter/2;
     public static final double firstStageTension = 10;
     public static final double secondStageTension = 5;
+    public static final double tensionLesseningFactor = secondStageTension/firstStageTension;
     public static final double firstStageAprxWeight = 5;
     public static final double secondStageAprxWeight = 3;
 

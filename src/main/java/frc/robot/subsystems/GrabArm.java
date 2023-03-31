@@ -201,18 +201,18 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryExtension) {
             _targetExtension = _targetExtension + extensionIps;
             if ( _targetExtension < _extensionEncoder.getPosition() && _extensionEncoder.getPosition() < 10.3){
-                    _compensationExtension = _compensationExtension * .5;
+                    _compensationExtension = _compensationExtension * Constants.GrabArm.tensionLesseningFactor;
             }
             else if ( _targetExtension > _extensionEncoder.getPosition() && _extensionEncoder.getPosition() > 10){
-                    _compensationExtension = _compensationExtension * .5;
+                    _compensationExtension = _compensationExtension * Constants.GrabArm.tensionLesseningFactor;
             }
             _extensionController.setReference(_targetExtension, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut); // Movement requires a lesser feed foward/ Not calculated
         } else {
             if ( _stationaryExtension < _extensionEncoder.getPosition() && _extensionEncoder.getPosition() < 10.3){
-                _compensationExtension = _compensationExtension * .5;
+                _compensationExtension = _compensationExtension * Constants.GrabArm.tensionLesseningFactor;
             }
             else if ( _stationaryExtension > _extensionEncoder.getPosition() && _extensionEncoder.getPosition() > 10){
-                _compensationExtension = _compensationExtension * .5;
+                _compensationExtension = _compensationExtension * Constants.GrabArm.tensionLesseningFactor;
             }
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
             stationaryExtension();
