@@ -356,4 +356,18 @@ public class GrabArm extends SubsystemBase {
         disengageServo();
         _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
     }
+
+    public boolean checkRotation(GrabArmPositions pos){
+        if(0 == MathUtil.applyDeadband(pos.rotation - _rotationEncoder.getPosition(), Constants.GrabArm.rotationPositionSettingToleranceDegrees)){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean checkExtension(GrabArmPositions pos){
+        if(0 == MathUtil.applyDeadband(pos.extension - _extensionEncoder.getPosition(), Constants.GrabArm.extensionPositionSettingToleranceInches)){
+            return true;
+        }
+        return false;
+    }
 }
