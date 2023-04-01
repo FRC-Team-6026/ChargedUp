@@ -41,6 +41,8 @@ public class GrabArm extends SubsystemBase {
     private boolean _isStationaryExtension = true;
     private double _stationaryRotation = 0;
     private double _stationaryExtension = 0;
+    private double _desiredRotation = 0;
+    private double _desiredExtension = 0;
     private double _compensationRotation = 0;
     private double _compensationExtension = 0;
     private double _targetExtension = 0;
@@ -298,7 +300,8 @@ public class GrabArm extends SubsystemBase {
                 return Substation;
             };
         },
-        Stow(0,0);
+        Stow(0,0),
+        TravelLimit(0,8);
         private final double rotation;
         private final double extension;
         GrabArmPositions(double rotation, double extension){
@@ -341,20 +344,33 @@ public class GrabArm extends SubsystemBase {
     }
 
     public void setDesiredRotation(GrabArmPositions set){
-        _stationaryRotation = set.rotation;
+        _desiredRotation = set.rotation;
     }
 
     public void setDesiredExtension(GrabArmPositions set){
-        _stationaryExtension = set.extension;
+        _desiredExtension = set.extension;
     }
 
     public void goToDesiredRotation(){
-        _rotationController.setReference(_stationaryRotation, ControlType.kSmartMotion,1, _compensationRotation, ArbFFUnits.kPercentOut);
+        _rotationController.setReference(_desiredRotation, ControlType.kSmartMotion,1, _compensationRotation, ArbFFUnits.kPercentOut);
     }
 
     public void goToDesiredExtension(){
         disengageServo();
-        _extensionController.setReference(_stationaryExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
+        _extensionController.setReference(_desiredExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
+    }
+
+    public void currentToStationary(){
+        currentRotationToStaionary();
+        currentExtensionToStationary();
+    }
+
+    public void currentRotationToStaionary(){
+        _stationaryRotation = _rotationEncoder.getPosition();
+    }
+
+    public void currentExtensionToStationary(){
+        _stationaryExtension = _extensionEncoder.getPosition();
     }
 
     public boolean checkRotation(GrabArmPositions pos){
@@ -370,4 +386,12 @@ public class GrabArm extends SubsystemBase {
         }
         return false;
     }
+
+    public boolean checkNeedToLimitTravelExtension(){
+        if(_extensionEncoder.getPosition() > GrabArmPositions.TravelLimit.extension){
+            return true;
+        }
+        return false;
+    }
+
 }
