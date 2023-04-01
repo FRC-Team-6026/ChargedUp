@@ -285,7 +285,7 @@ public class GrabArm extends SubsystemBase {
         Substation (172,12.3) {
             @Override
             public GrabArmPositions previous() {
-                return this;
+                return Floor;
             };
         },
         TopCone(180,0),
@@ -295,9 +295,10 @@ public class GrabArm extends SubsystemBase {
         Floor(180,0) {
             @Override
             public GrabArmPositions next() {
-                return this;
+                return Substation;
             };
-        };
+        },
+        Stow(0,0);
         private final double rotation;
         private final double extension;
         GrabArmPositions(double rotation, double extension){
@@ -337,6 +338,14 @@ public class GrabArm extends SubsystemBase {
     public void stationaryExtension(){
         engageServo();
         _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
+    }
+
+    public void setDesiredRotation(GrabArmPositions set){
+        _stationaryRotation = set.rotation;
+    }
+
+    public void setDesiredExtension(GrabArmPositions set){
+        _stationaryExtension = set.extension;
     }
 
     public void goToDesiredRotation(){
