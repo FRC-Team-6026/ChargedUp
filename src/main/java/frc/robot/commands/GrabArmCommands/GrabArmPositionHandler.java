@@ -15,13 +15,16 @@ import edu.wpi.first.wpilibj2.command.Commands;
 
 public final class GrabArmPositionHandler extends CommandBase{
   /** Example static factory for an autonomous command. */
-  public static CommandBase PositionHandler(GrabArm Arm, GrabArm.GrabArmPositions Position){
-    return SimulMovementPositions(Arm, Position);
+  public static CommandBase PositionHandler(GrabArm Arm, GrabArm.GrabArmPositions Position, boolean simultanous){
     
-    //if(Position.equals(GrabArmPositions.Stow)){
-    //  return StowPosition(Arm, Position);
-    //}
-    //return MainPositions(Arm, Position);
+    if(simultanous){
+    return SimulMovementPositions(Arm, Position);
+    } else {
+      if(Position.equals(GrabArmPositions.Stow)){
+        return StowPosition(Arm, Position);
+      }
+      return MainPositions(Arm, Position); 
+    }
   }
 
   private static CommandBase StowPosition(GrabArm Arm, GrabArm.GrabArmPositions Position) {
