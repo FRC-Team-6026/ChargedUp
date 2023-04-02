@@ -34,8 +34,6 @@ public class GrabArm extends SubsystemBase {
     private final Servo _ratchetServo = new Servo(9);
     private final DoubleSupplier _rotationSupplier;
     private final DoubleSupplier _extensionSupplier;
-    private GrabArmPositions _grabArmPositions = GrabArmPositions.Substation;
-
 
     private boolean _isStationaryRotation = true;
     private boolean _isStationaryExtension = true;
@@ -110,8 +108,6 @@ public class GrabArm extends SubsystemBase {
         SmartDashboard.putNumber("stationary rotation", _stationaryRotation);
         SmartDashboard.putNumber("stationary extension", _stationaryExtension);
 
-        SmartDashboard.putString("SelectionRotation", _grabArmPositions.name());
-
         if (_rotationLimitSwitch.isPressed()) {
             _rotationEncoder.setPosition(0);
             _stationaryRotation = 0;
@@ -131,14 +127,6 @@ public class GrabArm extends SubsystemBase {
 
     public void openGrabber() {
         _grabberSolenoid.set(true);
-    }
-
-    public void cycleNext() {
-        _grabArmPositions = _grabArmPositions.next();
-    }
-
-    public void cyclePrevious() {
-        _grabArmPositions = _grabArmPositions.previous();
     }
 
     private void manualControls() {
@@ -341,7 +329,7 @@ public class GrabArm extends SubsystemBase {
         double inLBTorqueE = Constants.GrabArm.spoolRadius * tensionFromSprings;
         double newtonMeterTorqueE = inLBTorqueE / 8.8507457673787;
         double motorOutputE = newtonMeterTorqueE / Constants.GrabArm.extensionGearRatio;
-        _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.65; // output / stall torque
+        _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.8; // output / stall torque
     }
 
     public void stationaryRotation(){
