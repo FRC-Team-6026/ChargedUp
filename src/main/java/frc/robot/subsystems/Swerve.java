@@ -35,7 +35,7 @@ public class Swerve extends SubsystemBase {
           new SwerveModule(2, Constants.Swerve.Mod2.constants),
           new SwerveModule(3, Constants.Swerve.Mod3.constants)
         };
-    swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getPositions());
+    swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getAngle(), getPositions());
 
     field = new Field2d();
     SmartDashboard.putData("Field", field);
@@ -47,7 +47,7 @@ public class Swerve extends SubsystemBase {
         Constants.Swerve.swerveKinematics.toSwerveModuleStates(
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    translation.getX(), translation.getY(), rotation, getYaw())
+                    translation.getX(), translation.getY(), rotation, getAngle())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
 
@@ -73,7 +73,7 @@ public class Swerve extends SubsystemBase {
   }
 
   public void resetOdometry(Pose2d pose) {
-    swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
+    swerveOdometry.resetPosition(getAngle(), getPositions(), pose);
   }
 
   public SwerveModuleState[] getStates() {
@@ -94,12 +94,17 @@ public class Swerve extends SubsystemBase {
 
   public void zeroGyro() {
     gyro.zeroYaw();
+    gyro.setAngleAdjustment(0);
   }
 
-  public Rotation2d getYaw() {
+  public void adjustAngle(double angle){
+    gyro.setAngleAdjustment(angle);
+  }
+
+  public Rotation2d getAngle() {
     return (Constants.Swerve.invertGyro)
-        ? Rotation2d.fromDegrees(360 - gyro.getYaw())
-        : Rotation2d.fromDegrees(gyro.getYaw());
+        ? Rotation2d.fromDegrees(360 - gyro.getAngle())
+        : Rotation2d.fromDegrees(gyro.getAngle());
   }
 
   public void resetToAbsolute() {
@@ -110,7 +115,7 @@ public class Swerve extends SubsystemBase {
 
   @Override
   public void periodic() {
-    swerveOdometry.update(getYaw(), getPositions());
+    swerveOdometry.update(getAngle(), getPositions());
     field.setRobotPose(getPose());
 
     for (SwerveModule mod : mSwerveMods) {

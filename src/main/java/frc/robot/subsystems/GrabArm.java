@@ -171,7 +171,7 @@ public class GrabArm extends SubsystemBase {
         if (!_isStationaryRotation) {           
             _targetRotation = _targetRotation + rotationSpeedDps;
             //Position Setting
-            _rotationController.setReference(_targetRotation, ControlType.kPosition, 0, 0.01, ArbFFUnits.kPercentOut);
+            _rotationController.setReference(_targetRotation, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
             
         } else {
             //if the arm is stationary set the reference to position so that the arm doesn't drift over time
@@ -228,11 +228,16 @@ public class GrabArm extends SubsystemBase {
         _rotationMotor.setIdleMode(Constants.GrabArm.rotationNeutralMode);
         _rotationEncoder.setPositionConversionFactor(Constants.GrabArm.rotationConversionFactor);
         _rotationEncoder.setVelocityConversionFactor(Constants.GrabArm.rotationVelocityConversionFactorDps);
-        _rotationController.setP(Constants.GrabArm.rotationKP);
-        _rotationController.setI(Constants.GrabArm.rotationKI);
-        _rotationController.setD(Constants.GrabArm.rotationKD);
+        _rotationController.setP(Constants.GrabArm.rotationKP,0);
+        _rotationController.setI(Constants.GrabArm.rotationKI,0);
+        _rotationController.setD(Constants.GrabArm.rotationKD,0);
+        _rotationController.setP(Constants.GrabArm.rotationKPAuto,1);
+        _rotationController.setI(Constants.GrabArm.rotationKIAuto,1);
+        _rotationController.setD(Constants.GrabArm.rotationKDAuto,1);
         _rotationController.setFF(Constants.GrabArm.rotationKFF);
-        _rotationController.setOutputRange(Constants.GrabArm.rotationMin, Constants.GrabArm.rotationMax);
+        _rotationController.setFF(Constants.GrabArm.rotationKFFAuto,1);
+        _rotationController.setOutputRange(Constants.GrabArm.rotationMin, Constants.GrabArm.rotationMax,0);
+        _rotationController.setOutputRange(Constants.GrabArm.rotationMin, Constants.GrabArm.rotationMax,1);
         _rotationMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _rotationMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.rotationForwardSoftLimitDegrees);
         _rotationMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
@@ -253,11 +258,16 @@ public class GrabArm extends SubsystemBase {
         _extensionMotor.setIdleMode(Constants.GrabArm.extensionNeutralMode);
         _extensionEncoder.setPositionConversionFactor(Constants.GrabArm.extensionConversionFactorInches);
         _extensionEncoder.setVelocityConversionFactor(Constants.GrabArm.extensionVelocityConversionFactorIps);
-        _extensionController.setP(Constants.GrabArm.extensionKP);
-        _extensionController.setI(Constants.GrabArm.extensionKI);
-        _extensionController.setD(Constants.GrabArm.extensionKD);
-        _extensionController.setFF(Constants.GrabArm.extensionKFF);
-        _extensionController.setOutputRange(Constants.GrabArm.extensionMin, Constants.GrabArm.extensionMax);
+        _extensionController.setP(Constants.GrabArm.extensionKP,0);
+        _extensionController.setI(Constants.GrabArm.extensionKI,0);
+        _extensionController.setD(Constants.GrabArm.extensionKD,0);
+        _extensionController.setFF(Constants.GrabArm.extensionKFF,0);
+        _extensionController.setP(Constants.GrabArm.extensionKP,1);
+        _extensionController.setI(Constants.GrabArm.extensionKI,1);
+        _extensionController.setD(Constants.GrabArm.extensionKD,1);
+        _extensionController.setFF(Constants.GrabArm.extensionKFF,1);
+        _extensionController.setOutputRange(Constants.GrabArm.extensionMin, Constants.GrabArm.extensionMax,0);
+        _extensionController.setOutputRange(Constants.GrabArm.extensionMin, Constants.GrabArm.extensionMax,1);
         _extensionMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _extensionMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.extensionForwardSoftLimitInches);
         _extensionMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
@@ -284,23 +294,23 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmPositions {
-        Substation (172,12.3) {
+        Substation (176,19) {
             @Override
             public GrabArmPositions previous() {
                 return Floor;
             };
         },
-        TopCone(180,0),
-        TopCube(180,0),
-        MidCone(180,0),
-        MidCube(180,0),
-        Floor(180,0) {
+        TopCone(172,19),
+        TopCube(181.7,15.7),
+        MidCone(178,3.9),
+        MidCube(197,2),
+        Floor(3,19) {
             @Override
             public GrabArmPositions next() {
                 return Substation;
             };
         },
-        Stow(0,0),
+        Stow(35,0),
         TravelLimit(0,8);
         private final double rotation;
         private final double extension;
@@ -318,7 +328,7 @@ public class GrabArm extends SubsystemBase {
         }
     }
 
-    public void compensationCompulation(){
+    public void compensationComputation(){
         //Compensation Calculations
         double centerOfGrav = (7.5+(0.254*_extensionEncoder.getPosition()));
         double cosineCompensation = Math.cos(Math.toRadians(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees));
@@ -361,16 +371,24 @@ public class GrabArm extends SubsystemBase {
     }
 
     public void currentToStationary(){
-        currentRotationToStaionary();
+        currentRotationToStationary();
         currentExtensionToStationary();
     }
 
-    public void currentRotationToStaionary(){
+    public void currentRotationToStationary(){
         _stationaryRotation = _rotationEncoder.getPosition();
     }
 
     public void currentExtensionToStationary(){
         _stationaryExtension = _extensionEncoder.getPosition();
+    }
+
+    public void desiredRotationToStationary(GrabArmPositions Rotation){
+        _stationaryRotation = Rotation.rotation;
+    }
+
+    public void desiredExtensionToStationary(GrabArmPositions Extension){
+        _stationaryExtension = Extension.extension;
     }
 
     public boolean checkRotation(GrabArmPositions pos){
@@ -390,8 +408,9 @@ public class GrabArm extends SubsystemBase {
     public boolean checkNeedToLimitTravelExtension(){
         if(_extensionEncoder.getPosition() > GrabArmPositions.TravelLimit.extension){
             return true;
-        }
+        } else {
         return false;
+        }
     }
 
 }
