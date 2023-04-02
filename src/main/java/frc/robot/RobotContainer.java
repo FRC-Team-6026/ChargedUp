@@ -108,15 +108,24 @@ public class RobotContainer {
     resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
 
 
-    Grabber.toggleOnTrue(new InstantCommand(() -> _grabArm.openGrabber()));
-    Grabber.toggleOnFalse(new InstantCommand(() -> _grabArm.closeGrabber()));
-    StowProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Stow, true));
-    SubstationProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Substation, true));
-    FloorProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Floor, true));
-    TopConeProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.TopCone, true));
-    MidConeProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.MidCone, true));
-    TopCubeProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.TopCube, true));
-    MidCubeProc.onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.MidCube, true));
+    Grabber.
+    toggleOnTrue(new InstantCommand(() -> _grabArm.openGrabber()));
+    Grabber.
+    toggleOnFalse(new InstantCommand(() -> _grabArm.closeGrabber()));
+    StowProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Stow, true));
+    SubstationProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Substation, true));
+    FloorProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Floor, true));
+    TopConeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.TopCone, true));
+    MidConeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.MidCone, true));
+    TopCubeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.TopCube, true));
+    MidCubeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.MidCube, true));
   }
 
   /**

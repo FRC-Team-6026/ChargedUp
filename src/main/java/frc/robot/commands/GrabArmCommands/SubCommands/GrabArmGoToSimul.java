@@ -7,11 +7,15 @@ package frc.robot.commands.GrabArmCommands.SubCommands;
 import frc.robot.subsystems.GrabArm;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
-/** An example command that uses an example subsystem. */
+/** Simultaniously moves Rotation and Extension torwards position at the same time. */
 public class GrabArmGoToSimul extends CommandBase {
 
   private final GrabArm _Arm;
   private final GrabArm.GrabArmPositions _desiredRotation;
+
+  private boolean _rotationStatus = false;
+  private boolean _extensionStatus = false;
+
 
   public GrabArmGoToSimul(GrabArm Arm, GrabArm.GrabArmPositions desiredRotation) {
     _Arm = Arm;
@@ -24,27 +28,39 @@ public class GrabArmGoToSimul extends CommandBase {
   public void initialize() {
     _Arm.setDesiredRotation(_desiredRotation);
     _Arm.setDesiredExtension(_desiredRotation);
+    _Arm.desiredRotationToStationary(_desiredRotation);
+    _Arm.desiredExtensionToStationary(_desiredRotation);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     _Arm.compensationComputation();
-    _Arm.goToDesiredExtension();
-    _Arm.goToDesiredRotation();
+    if(_Arm.checkRotation(_desiredRotation)){
+      _rotationStatus = true;
+      _Arm.stationaryRotation();
+    } else {
+      _rotationStatus = false;
+      _Arm.goToDesiredRotation();
+    }
+    if(_Arm.checkExtension(_desiredRotation)){
+      _extensionStatus = true;
+      _Arm.stationaryExtension();
+    } else {
+      _extensionStatus = false;
+      _Arm.goToDesiredExtension();
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    _Arm.desiredRotationToStationary(_desiredRotation);
-    _Arm.desiredExtensionToStationary(_desiredRotation);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(_Arm.checkRotation(_desiredRotation) && _Arm.checkExtension(_desiredRotation)){
+    if(_rotationStatus && _extensionStatus){
       return true;
     } else {return false;}
   }

@@ -311,7 +311,7 @@ public class GrabArm extends SubsystemBase {
             };
         },
         Stow(35,0),
-        TravelLimit(0,8);
+        TravelLimit(0,4);
         private final double rotation;
         private final double extension;
         GrabArmPositions(double rotation, double extension){
