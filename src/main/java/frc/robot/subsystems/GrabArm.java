@@ -9,7 +9,6 @@ import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
@@ -243,12 +242,6 @@ public class GrabArm extends SubsystemBase {
         _rotationMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _rotationMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.rotationForwardSoftLimitDegrees);
         _rotationMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
-        _rotationController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
-        _rotationController.setSmartMotionMaxAccel(Constants.GrabArm.maxRotationAccDps, 0);
-        _rotationController.setSmartMotionMaxVelocity(Constants.GrabArm.maxRotationDps, 0);
-        _rotationController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 1);
-        _rotationController.setSmartMotionMaxAccel(Constants.GrabArm.maxAutoPositionRotationDpsAcc, 1);
-        _rotationController.setSmartMotionMaxVelocity(Constants.GrabArm.maxAutoPositionRotationDpsAcc, 1);
 
         _rotationMotor.burnFlash();
     }
@@ -273,12 +266,6 @@ public class GrabArm extends SubsystemBase {
         _extensionMotor.enableVoltageCompensation(Constants.GrabArm.voltageComp);
         _extensionMotor.setSoftLimit(SoftLimitDirection.kForward, Constants.GrabArm.extensionForwardSoftLimitInches);
         _extensionMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
-        _extensionController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 0);
-        _extensionController.setSmartMotionMaxAccel(Constants.GrabArm.maxIpsAcc, 0);
-        _extensionController.setSmartMotionMaxVelocity(Constants.GrabArm.maxIps, 0);
-        _extensionController.setSmartMotionAccelStrategy(AccelStrategy.kTrapezoidal, 1);
-        _extensionController.setSmartMotionMaxAccel(Constants.GrabArm.maxAutoPositionMaxIpsAcc, 1);
-        _extensionController.setSmartMotionMaxVelocity(Constants.GrabArm.maxAutoPositionMaxIps, 1);
 
         _extensionMotor.burnFlash();
     }
