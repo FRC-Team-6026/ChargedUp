@@ -23,6 +23,8 @@ public class GrabArmGoToRotation extends CommandBase {
   @Override
   public void initialize() {
     _Arm.setDesiredRotation(_desiredRotation);
+    _Arm.calculateProfiles();
+    _Arm.runCommandTimer();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -30,13 +32,15 @@ public class GrabArmGoToRotation extends CommandBase {
   public void execute() {
     _Arm.compensationComputation();
     _Arm.stationaryExtension();
-    _Arm.goToDesiredRotation();
+    _Arm.goToDesiredRotationPosition();
+    _Arm.clearCommandTimer();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    _Arm.desiredRotationToStationary(_desiredRotation);;
+    _Arm.desiredRotationToStationary(_desiredRotation);
+    _Arm.stopNClearTimer();
   }
 
   // Returns true when the command should end.

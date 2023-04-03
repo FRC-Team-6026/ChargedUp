@@ -30,6 +30,8 @@ public class GrabArmGoToSimul extends CommandBase {
     _Arm.setDesiredExtension(_desiredRotation);
     _Arm.desiredRotationToStationary(_desiredRotation);
     _Arm.desiredExtensionToStationary(_desiredRotation);
+    _Arm.calculateProfiles();
+    _Arm.runCommandTimer();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -41,20 +43,21 @@ public class GrabArmGoToSimul extends CommandBase {
       _Arm.stationaryRotation();
     } else {
       _rotationStatus = false;
-      _Arm.goToDesiredRotation();
+      _Arm.goToDesiredRotationPosition();
     }
     if(_Arm.checkExtension(_desiredRotation)){
       _extensionStatus = true;
       _Arm.stationaryExtension();
     } else {
       _extensionStatus = false;
-      _Arm.goToDesiredExtension();
+      _Arm.goToDesiredExtensionPosition();
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    _Arm.stopNClearTimer();
   }
 
   // Returns true when the command should end.

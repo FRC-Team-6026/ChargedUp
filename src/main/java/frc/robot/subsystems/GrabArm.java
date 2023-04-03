@@ -13,9 +13,11 @@ import com.revrobotics.SparkMaxPIDController.AccelStrategy;
 import com.revrobotics.SparkMaxPIDController.ArbFFUnits;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -46,6 +48,13 @@ public class GrabArm extends SubsystemBase {
     private double _targetExtension = 0;
     private double _targetRotation = 0;
 
+    private Timer _commandTimer;
+    private TrapezoidProfile _rotationProfile;
+    private TrapezoidProfile.Constraints _rotationConstraints;
+    private TrapezoidProfile.State _rotationState;
+    private TrapezoidProfile _extensionProfile;
+    private TrapezoidProfile.Constraints _extensionConstraints;
+    private TrapezoidProfile.State _extensionState;
 
     public GrabArm(DoubleSupplier rotationSupplier, DoubleSupplier extensionSupplier) {
         super();
@@ -65,6 +74,11 @@ public class GrabArm extends SubsystemBase {
 
         _stationaryRotation = _rotationEncoder.getPosition();
         _stationaryExtension = _extensionEncoder.getPosition();
+
+        _rotationConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxAutoPositionRotationDps, Constants.GrabArm.maxAutoPositionRotationDpsAcc);
+        _extensionConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxAutoPositionMaxIps, Constants.GrabArm.maxAutoPositionMaxIpsAcc);
+
+        _commandTimer = new Timer();
 
         this.setDefaultCommand(controlLoop());
     }
@@ -349,13 +363,25 @@ public class GrabArm extends SubsystemBase {
         _desiredExtension = set.extension;
     }
 
-    public void goToDesiredRotation(){
-        _rotationController.setReference(_desiredRotation, ControlType.kSmartMotion,1, _compensationRotation, ArbFFUnits.kPercentOut);
+    public void goToDesiredRotationPosition(){
+        var position = _rotationProfile.calculate(commandTime()).position;
+        _rotationController.setReference(position, ControlType.kPosition, 0, _compensationRotation, ArbFFUnits.kPercentOut);
     }
 
-    public void goToDesiredExtension(){
+    public void goToDesiredExtensionPosition(){
         disengageServo();
-        _extensionController.setReference(_desiredExtension, ControlType.kSmartMotion,1, _compensationExtension, ArbFFUnits.kPercentOut);
+        var position = _extensionProfile.calculate(commandTime()).position;
+        _extensionController.setReference(position, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
+    }
+    
+    public void goToDesiredRotationVelocity(){
+        var velocity = _rotationProfile.calculate(commandTime()).velocity;
+        _rotationController.setReference(velocity, ControlType.kVelocity, 1, _compensationRotation, ArbFFUnits.kPercentOut);
+    }
+
+    public void goToDesiredExtensionVelocity(){
+        var velocity = _extensionProfile.calculate(commandTime()).velocity;
+        _extensionController.setReference(velocity, ControlType.kVelocity, 1, _compensationExtension, ArbFFUnits.kPercentOut);
     }
 
     public void currentToStationary(){
@@ -401,4 +427,33 @@ public class GrabArm extends SubsystemBase {
         }
     }
 
+    public void calculateInitialStates(){
+        _rotationState = new TrapezoidProfile.State(_rotationEncoder.getPosition(), _rotationEncoder.getVelocity());
+        _extensionState = new TrapezoidProfile.State(_extensionEncoder.getPosition(), _extensionEncoder.getVelocity());
+    }
+
+    public void calculateProfiles(){
+        calculateInitialStates();
+        TrapezoidProfile.State desiredRotationState = new TrapezoidProfile.State(_desiredRotation, 0.0);
+        TrapezoidProfile.State desiredExtensionState = new TrapezoidProfile.State(_desiredExtension, 0.0);
+        _rotationProfile = new TrapezoidProfile(_rotationConstraints, desiredRotationState, _rotationState);
+        _extensionProfile = new TrapezoidProfile(_extensionConstraints, desiredExtensionState, _extensionState);
+    }
+
+    public void runCommandTimer(){
+        _commandTimer.restart();
+    }
+
+    public void clearCommandTimer(){
+        _commandTimer.reset();
+    }
+
+    public void stopNClearTimer(){
+        _commandTimer.stop();
+        _commandTimer.reset();
+    }
+
+    private double commandTime(){
+        return _commandTimer.get() + Constants.GrabArm.codeExecutionRateTime;
+    }
 }
