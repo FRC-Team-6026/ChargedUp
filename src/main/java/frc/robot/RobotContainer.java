@@ -102,9 +102,9 @@ public class RobotContainer {
       robotCentric = !robotCentric;
       SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
     }));
-    //driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
-    //driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
-    //driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
+    driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
+    driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
+    driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
     resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
 
 
