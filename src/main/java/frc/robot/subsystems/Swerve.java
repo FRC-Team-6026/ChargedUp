@@ -61,6 +61,14 @@ public class Swerve extends SubsystemBase {
     }
   }
 
+  public void xPattern(){
+    double modAngle = 45;
+    for(SwerveModule mod : mSwerveMods){
+      mod.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(modAngle)), false);
+      modAngle = modAngle + 90;
+    }
+  }
+
   /* Used by SwerveControllerCommand in Auto */
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);

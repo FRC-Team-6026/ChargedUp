@@ -48,6 +48,11 @@ public class LevelRobot extends CommandBase{
         return false;
     }
 
+    @Override
+    public void end(boolean interrupted){
+        _swerve.xPattern();
+    }
+
     private double getPitchRatio(){
         double pitch = _gyro.getPitch();
         if(MathUtil.applyDeadband(pitch, _tolerance) == 0){
