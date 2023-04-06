@@ -47,6 +47,9 @@ public class GrabArm extends SubsystemBase {
     private double _targetExtension = 0;
     private double _targetRotation = 0;
 
+    private boolean _zeroedRotation = false;
+    private boolean _zeroedExtension = false;
+
     private Timer _commandTimer;
     private TrapezoidProfile _rotationProfile;
     private TrapezoidProfile.Constraints _rotationConstraints;
@@ -78,7 +81,6 @@ public class GrabArm extends SubsystemBase {
         _extensionConstraints = new TrapezoidProfile.Constraints(Constants.GrabArm.maxAutoPositionMaxIps, Constants.GrabArm.maxAutoPositionMaxIpsAcc);
 
         _commandTimer = new Timer();
-
         this.setDefaultCommand(controlLoop());
     }
 
@@ -122,15 +124,25 @@ public class GrabArm extends SubsystemBase {
         SmartDashboard.putNumber("stationary extension", _stationaryExtension);
 
         if (_rotationLimitSwitch.isPressed()) {
+            if(!_zeroedRotation){
             _rotationEncoder.setPosition(0);
             _stationaryRotation = 0;
             _targetRotation = 0;
+            _zeroedRotation = true;
+            }
+        } else {
+            _zeroedRotation = false;
         }
 
         if (_extensionLimitSwitch.isPressed()) {
+            if(!_zeroedExtension){
             _extensionEncoder.setPosition(0);
             _stationaryExtension = 0;
             _targetExtension = 0;
+            _zeroedExtension = true;
+            }
+        } else {
+            _zeroedExtension = false;
         }
     }
 
@@ -278,18 +290,14 @@ public class GrabArm extends SubsystemBase {
         _ratchetServo.setAngle(30);
     }
 
-    public void setRotationTargetTest(){
-        _stationaryRotation = 30;
-    }
-
     public enum GrabArmPositions {
-        Substation (176,19) {
+        Substation (174,18.5) {
             @Override
             public GrabArmPositions previous() {
                 return Floor;
             };
         },
-        TopCone(172,19),
+        TopCone(172,18.5),
         TopCube(181.7,15.7),
         MidCone(178,3.9),
         MidCube(197,2),
@@ -299,7 +307,7 @@ public class GrabArm extends SubsystemBase {
                 return Substation;
             };
         },
-        Stow(35,0),
+        Stow(5,0),
         TravelLimit(0,4);
         private final double rotation;
         private final double extension;
@@ -331,6 +339,10 @@ public class GrabArm extends SubsystemBase {
         double newtonMeterTorqueE = inLBTorqueE / 8.8507457673787;
         double motorOutputE = newtonMeterTorqueE / Constants.GrabArm.extensionGearRatio;
         _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.8; // output / stall torque
+
+        if(_extensionEncoder.getPosition() > 10.2){
+            _compensationExtension = _compensationExtension * 0.5;
+        }
     }
 
     public void stationaryRotation(){
@@ -390,6 +402,14 @@ public class GrabArm extends SubsystemBase {
 
     public void desiredExtensionToStationary(GrabArmPositions Extension){
         _stationaryExtension = Extension.extension;
+    }
+
+    public void desiredRotationToTarget(GrabArmPositions Rotation){
+        _targetRotation = Rotation.rotation;
+    }
+
+    public void desiredExtensionToTarget(GrabArmPositions Extension){
+        _targetExtension = Extension.extension;
     }
 
     public boolean checkRotation(GrabArmPositions pos){

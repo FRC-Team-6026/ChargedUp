@@ -11,25 +11,27 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 public class GrabArmGoToSimul extends CommandBase {
 
   private final GrabArm _Arm;
-  private final GrabArm.GrabArmPositions _desiredRotation;
+  private final GrabArm.GrabArmPositions _desiredPosition;
 
   private boolean _rotationStatus = false;
   private boolean _extensionStatus = false;
 
 
-  public GrabArmGoToSimul(GrabArm Arm, GrabArm.GrabArmPositions desiredRotation) {
+  public GrabArmGoToSimul(GrabArm Arm, GrabArm.GrabArmPositions desiredPosition) {
     _Arm = Arm;
-    _desiredRotation = desiredRotation;
+    _desiredPosition = desiredPosition;
     addRequirements(Arm);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    _Arm.setDesiredRotation(_desiredRotation);
-    _Arm.setDesiredExtension(_desiredRotation);
-    _Arm.desiredRotationToStationary(_desiredRotation);
-    _Arm.desiredExtensionToStationary(_desiredRotation);
+    _Arm.setDesiredRotation(_desiredPosition);
+    _Arm.setDesiredExtension(_desiredPosition);
+    _Arm.desiredRotationToStationary(_desiredPosition);
+    _Arm.desiredExtensionToStationary(_desiredPosition);
+    _Arm.desiredRotationToTarget(_desiredPosition);
+    _Arm.desiredExtensionToTarget(_desiredPosition);
     _Arm.calculateProfiles();
     _Arm.runCommandTimer();
   }
@@ -38,14 +40,14 @@ public class GrabArmGoToSimul extends CommandBase {
   @Override
   public void execute() {
     _Arm.compensationComputation();
-    if(_Arm.checkRotation(_desiredRotation)){
+    if(_Arm.checkRotation(_desiredPosition)){
       _rotationStatus = true;
       _Arm.stationaryRotation();
     } else {
       _rotationStatus = false;
       _Arm.goToDesiredRotationPosition();
     }
-    if(_Arm.checkExtension(_desiredRotation)){
+    if(_Arm.checkExtension(_desiredPosition)){
       _extensionStatus = true;
       _Arm.stationaryExtension();
     } else {
@@ -58,6 +60,12 @@ public class GrabArmGoToSimul extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     _Arm.stopNClearTimer();
+    _Arm.desiredRotationToStationary(_desiredPosition);
+    _Arm.desiredExtensionToStationary(_desiredPosition);
+    _Arm.desiredRotationToTarget(_desiredPosition);
+    _Arm.desiredExtensionToTarget(_desiredPosition);
+    _Arm.stationaryExtension();
+    _Arm.stationaryExtension();
   }
 
   // Returns true when the command should end.
