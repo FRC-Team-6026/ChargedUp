@@ -13,6 +13,10 @@ public final class Constants {
   public static final class Swerve {
     public static final double stickDeadband = 0.06;
 
+    //Leveling Constants
+    public static final double levelingMaxVelocityMs = 0.75;
+    public static final double maxPitchDegrees = 2.5;
+
     public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
     /* Drivetrain Constants */
@@ -86,8 +90,9 @@ public final class Constants {
       public static final int angleMotorID = 2;
       public static final int canCoderID = 9;
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(144.05);
+      public static final double xPosition = -45;
       public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset, xPosition);
     }
 
     /* Front Right Module - Module 1 */
@@ -96,8 +101,9 @@ public final class Constants {
       public static final int angleMotorID = 4;
       public static final int canCoderID = 10;
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(318.86);
+      public static final double xPosition = 45;
       public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset, xPosition);
     }
 
     /* Back Left Module - Module 2 */
@@ -106,8 +112,9 @@ public final class Constants {
       public static final int angleMotorID = 6;
       public static final int canCoderID = 11;
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(323.96);
+      public static final double xPosition = 45;
       public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset, xPosition);
     }
 
     /* Back Right Module - Module 3 */
@@ -116,8 +123,9 @@ public final class Constants {
       public static final int angleMotorID = 8;
       public static final int canCoderID = 12;
       public static final Rotation2d angleOffset = Rotation2d.fromDegrees(221.48);
+      public static final double xPosition = -45;
       public static final SwerveModuleConstants constants =
-          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset);
+          new SwerveModuleConstants(driveMotorID, angleMotorID, canCoderID, angleOffset, xPosition);
     }
   }
 
@@ -206,7 +214,7 @@ public final class Constants {
     public static final double maxAutoPositionMaxIpsAcc = 25;
 
     public static final float rotationForwardSoftLimitDegrees = 205;
-    public static final float extensionForwardSoftLimitInches = 19;
+    public static final float extensionForwardSoftLimitInches = 20;
 
     public static final double rotationOffsetinDegrees = 27;
     public static final double heightLimit = 72; // Max Height Minus 6''
