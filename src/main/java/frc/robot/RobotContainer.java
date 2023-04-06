@@ -48,6 +48,8 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kB.value);
   private final JoystickButton resetOdometry = 
       new JoystickButton(driver, XboxController.Button.kA.value);
+  private final JoystickButton xSwerve = 
+      new JoystickButton(driver, XboxController.Button.kBack.value);
   private boolean robotCentric = false;
 
   private final JoystickButton Grabber =
@@ -106,6 +108,7 @@ public class RobotContainer {
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
     resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
+    xSwerve.onTrue(new InstantCommand(() -> _swerve.xPattern()));
 
 
     Grabber.
