@@ -11,7 +11,7 @@ import frc.lib.config.SwerveModuleConstants;
 public final class Constants {
 
   public static final class Swerve {
-    public static final double stickDeadband = 0.07;
+    public static final double stickDeadband = 0.06;
 
     public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
@@ -65,8 +65,8 @@ public final class Constants {
     public static final double angleConversionFactor = 360.0 / angleGearRatio;
 
     /* Swerve Profiling Values */
-    public static final double maxSpeed = 4.5; // meters per second
-    public static final double maxAngularVelocity = 4; //radians per second
+    public static final double maxSpeed = 5; // meters per second
+    public static final double maxAngularVelocity = 4.5; //radians per second
 
     /* Neutral Modes */
     public static final IdleMode angleNeutralMode = IdleMode.kBrake;
@@ -140,12 +140,17 @@ public final class Constants {
   public static final class GrabArm {
     public static final double spoolDiameter = 0.375;
     public static final double spoolRadius = spoolDiameter/2;
+    public static final double firstStageTension = 10;
+    public static final double secondStageTension = 5;
+    public static final double tensionLesseningFactor = secondStageTension/firstStageTension;
+    public static final double firstStageAprxWeight = 5;
+    public static final double secondStageAprxWeight = 3;
 
     public static final double stickDeadband = 0.05;
     public static final double rotationGearRatio = 80;
     public static final double rotationConversionFactor = 360.0 / rotationGearRatio;
     public static final double rotationVelocityConversionFactorDps = rotationConversionFactor / 60.0;
-    public static final double extensionGearRatio = 3;
+    public static final double extensionGearRatio = 2.25;
     public static final double extensionConversionFactorInches = spoolDiameter * Math.PI / extensionGearRatio;
     public static final double extensionVelocityConversionFactorIps = extensionConversionFactorInches / 60.0;
 
@@ -163,15 +168,26 @@ public final class Constants {
     public static final double rotationKI = 0.0;
     public static final double rotationKD = 0.025;
     public static final double rotationKFF = 0.0;
-    public static final double rotationMin = -65.0;
-    public static final double rotationMax = 65.0;
+    public static final double rotationMin = -.65;
+    public static final double rotationMax = .65;
 
-    public static final double extensionKP = 0.05;
+    public static final double rotationKPAuto = 0.012;
+    public static final double rotationKIAuto = 0;
+    public static final double rotationKDAuto = 0;
+    public static final double rotationKFFAuto = 0;
+
+    public static final double extensionKP = 0.07;
     public static final double extensionKI = 0.0;
     public static final double extensionKD = 0.0;
     public static final double extensionKFF = 0.0;
-    public static final double extensionMin = -15.0;
-    public static final double extensionMax = 5.0;
+    public static final double extensionMin = -.35;
+    public static final double extensionMax = .30;
+
+    public static final double extensionKPAuto = 0.03;
+    public static final double extensionKIAuto = 0;
+    public static final double extensionKDAuto = 0.05;
+    public static final double extensionKFFAuto = 0;
+
 
     public static final double codeExecutionRate = 50.0;
     public static final double codeExecutionRateTime = 1.0 / codeExecutionRate;
@@ -180,13 +196,17 @@ public final class Constants {
     public static final double maxRotationAccDps = 45.0;
     public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
     public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
-    public static final double maxIps = 5.0;
+    public static final double maxIps = 7.0;
     public static final double maxIpsAcc = 3.0;
     public static final double maxIpsExecution = maxIps / codeExecutionRate;
     public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
+    public static final double maxAutoPositionRotationDps = 175;
+    public static final double maxAutoPositionRotationDpsAcc = 125;
+    public static final double maxAutoPositionMaxIps = 30.0;
+    public static final double maxAutoPositionMaxIpsAcc = 25;
 
-    public static final float rotationForwardSoftLimitDegrees = 188;
-    public static final float extensionForwardSoftLimitInches = 9;
+    public static final float rotationForwardSoftLimitDegrees = 205;
+    public static final float extensionForwardSoftLimitInches = 19;
 
     public static final double rotationOffsetinDegrees = 27;
     public static final double heightLimit = 72; // Max Height Minus 6''
@@ -195,7 +215,10 @@ public final class Constants {
     public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
     public static final double coneWeightLb = 1.4375;
 
+    public static final double rotationPositionSettingToleranceDegrees = 2;
+    public static final double extensionPositionSettingToleranceInches = 0.25;
+
     public static final double rotationStallTorque = 2.6;
-    public static final double extensionStallTorque = .97;
+    public static final double extensionStallTorque = 2.6;
   }
 }
