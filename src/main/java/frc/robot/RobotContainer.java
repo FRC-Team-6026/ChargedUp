@@ -49,7 +49,7 @@ public class RobotContainer {
   private final JoystickButton resetOdometry = 
       new JoystickButton(driver, XboxController.Button.kA.value);
   private final JoystickButton xSwerve = 
-      new JoystickButton(driver, XboxController.Button.kBack.value);
+      new JoystickButton(driver, XboxController.Button.kLeftBumper.value);
   private boolean robotCentric = false;
 
   private final JoystickButton Grabber =
@@ -104,10 +104,11 @@ public class RobotContainer {
       robotCentric = !robotCentric;
       SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
     }));
-    driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
-    driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
-    driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
+    //driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
+    //driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
+    //driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
     resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
+    //xSwerve.onTrue(new LevelRobot(_swerve, _swerve.getGyro()));
     xSwerve.onTrue(new InstantCommand(() -> _swerve.xPattern()));
 
 

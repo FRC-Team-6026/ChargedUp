@@ -13,7 +13,6 @@ public class LevelRobot extends CommandBase{
     private double _tolerance = Constants.Swerve.maxPitchDegrees;
     private double _maxPitch = 20;
     private double _pitchRange = _maxPitch - _tolerance;
-    private double _maxVelocityMs = Constants.Swerve.levelingMaxVelocityMs;
 
     private final Timer _timer = new Timer();
 
@@ -35,7 +34,7 @@ public class LevelRobot extends CommandBase{
     @Override
     public void execute(){
         var pitch = getPitchRatio();
-        _swerve.drive(new Translation2d(pitch,0).times(_maxVelocityMs), 0, true, true);
+        _swerve.drive(new Translation2d(pitch,0), 0, true, true);
     }
 
     @Override
@@ -58,15 +57,14 @@ public class LevelRobot extends CommandBase{
         if(MathUtil.applyDeadband(pitch, _tolerance) == 0){
             return 0.0;
         }
-        //calculating abs ratio 0 to 1
-        double zeroToOne = (Math.abs(pitch) - _tolerance) / _pitchRange;
+        //calculating abs ratio 0 to 1 then multiplied by speed
+        double zeroToOne = ((Math.abs(pitch) - _tolerance) / _pitchRange) * Constants.Swerve.levelingMaxVelocityMs;
         if (zeroToOne > 1) {
             zeroToOne = 1;
         } else if (zeroToOne < 0) {
             zeroToOne = 0;
         }
-        //squaring to drop off input faster as approaching zero
-        zeroToOne = zeroToOne * zeroToOne;
+
         if(pitch < 0){
             return -zeroToOne;
         } else {

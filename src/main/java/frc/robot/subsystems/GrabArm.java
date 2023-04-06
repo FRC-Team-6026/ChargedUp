@@ -291,13 +291,13 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmPositions {
-        Substation (174,18.5) {
+        Substation (177,1) {
             @Override
             public GrabArmPositions previous() {
                 return Floor;
             };
         },
-        TopCone(172,18.5),
+        TopCone(172,19),
         TopCube(181.7,15.7),
         MidCone(178,3.9),
         MidCube(197,2),
