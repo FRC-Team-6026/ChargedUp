@@ -31,6 +31,8 @@ public class SwerveModule {
   private final SparkMaxPIDController driveController;
   private final SparkMaxPIDController angleController;
 
+  private final SwerveModuleState xState;
+
   private final SimpleMotorFeedforward feedforward =
       new SimpleMotorFeedforward(
           Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
@@ -38,6 +40,8 @@ public class SwerveModule {
   public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants) {
     this.moduleNumber = moduleNumber;
     angleOffset = moduleConstants.angleOffset;
+
+    xState = new SwerveModuleState(0, Rotation2d.fromDegrees(moduleConstants.xPosition));
 
     /* Angle Encoder Config */
     angleEncoder = new CANCoder(moduleConstants.cancoderID);
@@ -58,13 +62,18 @@ public class SwerveModule {
     lastAngle = getState().angle;
   }
 
-  public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop) {
+  public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop, boolean X) {
     // Custom optimize command, since default WPILib optimize assumes continuous controller which
     // REV and CTRE are not
     desiredState = OnboardModuleState.optimize(desiredState, getState().angle);
 
-    setAngle(desiredState);
-    setSpeed(desiredState, isOpenLoop);
+    if(X){
+      setAngle(xState, X);
+      setSpeed(xState, isOpenLoop);
+    } else {
+      setAngle(desiredState, X);
+      setSpeed(desiredState, isOpenLoop);
+    }
   }
 
   void resetToAbsolute() {
@@ -122,7 +131,10 @@ public class SwerveModule {
     }
   }
 
-  private void setAngle(SwerveModuleState desiredState) {
+  private void setAngle(SwerveModuleState desiredState, boolean isX) {
+    if(isX){
+      angleController.setReference(desiredState.angle.getDegrees(), ControlType.kPosition);
+    } else {
     // Prevent rotating module if speed is less then 1%. Prevents jittering.
     Rotation2d angle =
         (Math.abs(desiredState.speedMetersPerSecond) <= (Constants.Swerve.maxSpeed * 0.01))
@@ -131,6 +143,7 @@ public class SwerveModule {
 
     angleController.setReference(angle.getDegrees(), ControlType.kPosition);
     lastAngle = angle;
+    }
   }
 
   private Rotation2d getAngle() {

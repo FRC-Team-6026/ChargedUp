@@ -13,12 +13,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
+
 import frc.robot.commands.GrabArmCommands.GrabArmPositionHandler;
 import frc.robot.subsystems.GrabArm;
+
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.GrabArm.GrabArmPositions;
 
+import com.kauailabs.navx.frc.AHRS;
+
 public class ExampleAuto extends SequentialCommandGroup {
+
   public ExampleAuto(Swerve s_Swerve, GrabArm _Arm) {
     
     addRequirements(s_Swerve);
@@ -38,7 +43,6 @@ public class ExampleAuto extends SequentialCommandGroup {
     eventMap.put("topCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCube, true));
     eventMap.put("midCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCone, true));
     eventMap.put("midCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCube, true));
-
 
     // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
     SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(

@@ -27,7 +27,11 @@ public class Swerve extends SubsystemBase {
   private SwerveDriveOdometry swerveOdometry;
   private SwerveModule[] mSwerveMods;
 
+  private boolean isX = false;
+
   private Field2d field;
+
+  public static boolean leveling = false;
 
   public Swerve() {
     gyro = new AHRS();
@@ -56,13 +60,24 @@ public class Swerve extends SubsystemBase {
                     translation.getX(), translation.getY(), rotation, getAngle())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
-
-    for (SwerveModule mod : mSwerveMods) {
-      mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
+      for (SwerveModule mod : mSwerveMods) {
+      mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop, isX);
       var modState = swerveModuleStates[mod.moduleNumber];
       SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired angle: ", modState.angle.getDegrees());
       SmartDashboard.putNumber("Mod " + mod.moduleNumber + " desired velocity: ", modState.speedMetersPerSecond);
     }
+  }
+
+  public void xPattern(){
+    isX = !isX;
+  }
+
+  public void xPatternTrue(){
+    isX = true;
+  }
+
+  public void xPatternFalse(){
+    isX = false;
   }
 
   /* Used by SwerveControllerCommand in Auto */
@@ -70,7 +85,7 @@ public class Swerve extends SubsystemBase {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, Constants.Swerve.maxSpeed);
 
     for (SwerveModule mod : mSwerveMods) {
-      mod.setDesiredState(desiredStates[mod.moduleNumber], false);
+      mod.setDesiredState(desiredStates[mod.moduleNumber], false, isX);
     }
   }
 
@@ -155,5 +170,9 @@ public Command followTrajectoryCommand(PathPlannerTrajectory traj, boolean isFir
       SmartDashboard.putNumber(
           "Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);      
     }
+  }
+
+  public AHRS getGyro(){
+    return gyro;
   }
 }
