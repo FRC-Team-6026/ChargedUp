@@ -1,6 +1,5 @@
 package frc.robot.autos;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,25 +11,34 @@ import com.pathplanner.lib.auto.SwerveAutoBuilder;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
-import frc.robot.Constants.GrabArm;
+import frc.robot.commands.GrabArmCommands.GrabArmPositionHandler;
+import frc.robot.subsystems.GrabArm;
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.GrabArm.GrabArmPositions;
 
 public class ExampleAuto extends SequentialCommandGroup {
   public ExampleAuto(Swerve s_Swerve, GrabArm _Arm) {
     
+    addRequirements(s_Swerve);
+    addRequirements(_Arm);
     // This will load the file "FullAuto.path" and generate it with a max velocity of 4 m/s and a max acceleration of 3 m/s^2
     // for every path in the group
-    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("TopCubeGrabCubeBalance", new PathConstraints(4, 3));
+    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("TopCubeGrabCubeBalance", new PathConstraints(Constants.AutoConstants.kMaxSpeedMetersPerSecond, Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared));
 
     // This is just an example event map. It would be better to have a constant, global event map
     // in your code that will be used by all path following commands.
     HashMap<String, Command> eventMap = new HashMap<>();
-    eventMap.put("marker1", new PrintCommand("Passed marker 1"));
     eventMap.put("openGrabber", new InstantCommand(() -> _Arm.openGrabber()));
     eventMap.put("closeGrabber", new InstantCommand(() -> _Arm.closeGrabber()));
+    eventMap.put("stow", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.Stow, true));
+    eventMap.put("floor", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.Floor, true));
+    eventMap.put("topCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCone, true));
+    eventMap.put("topCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCube, true));
+    eventMap.put("midCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCone, true));
+    eventMap.put("midCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCube, true));
+
 
     // Create the AutoBuilder. This only needs to be created once when robot code starts, not every time you want to create an auto command. A good place to put this is in RobotContainer along with your subsystems.
     SwerveAutoBuilder autoBuilder = new SwerveAutoBuilder(
@@ -44,7 +52,6 @@ public class ExampleAuto extends SequentialCommandGroup {
         true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
         s_Swerve // The drive subsystem. Used to properly set the requirements of path following commands
     );
-
-    Command fullAuto = autoBuilder.fullAuto(pathGroup);
+    addCommands(autoBuilder.fullAuto(pathGroup));
   }
 }
