@@ -10,6 +10,14 @@ public class Limelight extends SubsystemBase {
     private final NetworkTableInstance _instance = NetworkTableInstance.getDefault();
     private final NetworkTable _table = _instance.getTable("limelight");
 
+    public boolean isTargets(){
+        if(_table.getEntry("<tv>").getDouble(0) == 1){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public Pose2d getRobotPoseInTargetSpace() {
         var robotPoseArray = new double[6];
         _table.getEntry("botpose_targetspace").getDoubleArray(robotPoseArray);

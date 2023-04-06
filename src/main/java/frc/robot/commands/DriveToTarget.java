@@ -68,7 +68,9 @@ public class DriveToTarget extends SequentialCommandGroup {
             swerve::setModuleStates,
             swerve);
 
+        if(limelight.isTargets()){  
         addCommands(new InstantCommand(() -> swerve.resetOdometry(trajectoryToTarget.getInitialPose())),
             swerveControllerCommand);
+        }
     }
 }

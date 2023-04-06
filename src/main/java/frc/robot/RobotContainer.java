@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.autos.*;
 import frc.robot.commands.*;
+import frc.robot.commands.GrabArmCommands.GrabArmPositionHandler;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.GrabArm.GrabArmPositions;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -38,17 +40,34 @@ public class RobotContainer {
       new JoystickButton(driver, XboxController.Button.kBack.value);
   private final JoystickButton robotCentricBumper =
       new JoystickButton(driver, XboxController.Button.kStart.value);
-  private final JoystickButton openGrabber =
-      new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
-  private final JoystickButton closeGrabber =
-      new JoystickButton(operator, XboxController.Button.kRightBumper.value);
   private final JoystickButton driveToTargetCenter =
       new JoystickButton(driver, XboxController.Button.kY.value);
   private final JoystickButton driveToTargetLeft =
       new JoystickButton(driver, XboxController.Button.kX.value);
   private final JoystickButton driveToTargetRight =
       new JoystickButton(driver, XboxController.Button.kB.value);
+  private final JoystickButton resetOdometry = 
+      new JoystickButton(driver, XboxController.Button.kA.value);
   private boolean robotCentric = false;
+
+  private final JoystickButton Grabber =
+  new JoystickButton(operator, XboxController.Button.kLeftBumper.value);
+  private final JoystickButton StowProc = 
+  new JoystickButton(operator, XboxController.Button.kRightBumper.value);
+  private final JoystickButton SubstationProc = 
+  new JoystickButton(operator, XboxController.Button.kBack.value);
+  private final JoystickButton FloorProc = 
+  new JoystickButton(operator, XboxController.Button.kStart.value);
+  private final JoystickButton TopConeProc = 
+  new JoystickButton(operator, XboxController.Button.kY.value);
+  private final JoystickButton MidConeProc = 
+  new JoystickButton(operator, XboxController.Button.kB.value);
+  private final JoystickButton TopCubeProc =
+  new JoystickButton(operator, XboxController.Button.kX.value);
+  private final JoystickButton MidCubeProc = 
+  new JoystickButton(operator, XboxController.Button.kA.value);
+
+
 
   /* Subsystems */
   private final Swerve _swerve = new Swerve();
@@ -83,16 +102,30 @@ public class RobotContainer {
       robotCentric = !robotCentric;
       SmartDashboard.putBoolean("Is Robot Centric", robotCentric);
     }));
-    openGrabber.onTrue(new InstantCommand(() -> _grabArm.openGrabber()));
-    closeGrabber.onTrue(new InstantCommand(() -> _grabArm.closeGrabber()));
     driveToTargetLeft.onTrue(new DriveToTarget(_swerve, _limelight, -1));
     driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
+    resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
 
-    //rotationPPlus.onTrue(new InstantCommand(() -> _grabArm.rotationPPlus()));
-    //rotationPMinus.onTrue(new InstantCommand(() -> _grabArm.rotationPMinus()));
-    //extensionPPlus.onTrue(new InstantCommand(() -> _grabArm.extensionPPlus()));
-    //extensionPMinus.onTrue(new InstantCommand(() -> _grabArm.extensionPMinus()));
+
+    Grabber.
+    toggleOnTrue(new InstantCommand(() -> _grabArm.openGrabber()));
+    Grabber.
+    toggleOnFalse(new InstantCommand(() -> _grabArm.closeGrabber()));
+    StowProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Stow, true));
+    SubstationProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Substation, true));
+    FloorProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.Floor, true));
+    TopConeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.TopCone, true));
+    MidConeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.MidCone, true));
+    TopCubeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.TopCube, true));
+    MidCubeProc.
+    onTrue(GrabArmPositionHandler.PositionHandler(_grabArm, GrabArmPositions.MidCube, true));
   }
 
   /**
