@@ -47,7 +47,8 @@ public class GrabArm extends SubsystemBase {
     private double _targetExtension = 0;
     private double _targetRotation = 0;
 
-    private boolean _zeroedRotation = false;
+    private boolean _zeroedRotationOnPress = false;
+    private boolean _zeroedRotationOnReleast = false;
     private boolean _zeroedExtension = false;
 
     private Timer _commandTimer;
@@ -124,15 +125,22 @@ public class GrabArm extends SubsystemBase {
         SmartDashboard.putNumber("stationary extension", _stationaryExtension);
 
         if (_rotationLimitSwitch.isPressed()) {
-            if(!_zeroedRotation){
+            if(!_zeroedRotationOnPress){
             _rotationEncoder.setPosition(0);
             _stationaryRotation = 0;
             _targetRotation = 0;
-            _zeroedRotation = true;
+            _zeroedRotationOnPress = true;
             }
+            _zeroedRotationOnReleast = false;
         } else {
-            _zeroedRotation = false;
+            _zeroedRotationOnPress = false;
+
+            if(!_zeroedRotationOnReleast){
+            _rotationEncoder.setPosition(0);
+            _zeroedRotationOnReleast = true;
+            }
         }
+        
 
         if (_extensionLimitSwitch.isPressed()) {
             if(!_zeroedExtension){
@@ -167,8 +175,6 @@ public class GrabArm extends SubsystemBase {
         var rotationSpeedDps = rotationRatio * Constants.GrabArm.maxRotationExecution;
         var extensionIps = extensionRatio * Constants.GrabArm.maxIpsExecution;
 
-        double extensionHeight = (_extensionEncoder.getPosition() + Constants.GrabArm.baseArmLength) * Math.sin(_rotationEncoder.getPosition() - Constants.GrabArm.rotationOffsetinDegrees);
-
         //set the stationary rotation when the arm comes to a stop.
         if (rotationRatio == 0 && !_isStationaryRotation) {
             _isStationaryRotation = true;
@@ -202,10 +208,6 @@ public class GrabArm extends SubsystemBase {
                 _targetExtension = _extensionEncoder.getPosition();
             }
         } 
-
-        if(extensionHeight > Constants.GrabArm.maxExtensionHeight){
-            _stationaryExtension = Constants.GrabArm.maxExtensionHeight;
-        }
 
         if( !_isStationaryExtension || _stationaryExtension - 0.1 > _extensionEncoder.getPosition()){
             disengageServo();
@@ -291,17 +293,17 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmPositions {
-        Substation (177,1) {
+        Substation (178,1) {
             @Override
             public GrabArmPositions previous() {
                 return Floor;
             };
         },
-        TopCone(172,19),
+        TopCone(178,21),
         TopCube(181.7,15.7),
         MidCone(178,3.9),
         MidCube(197,2),
-        Floor(3,19) {
+        Floor(5,18) {
             @Override
             public GrabArmPositions next() {
                 return Substation;
@@ -341,7 +343,7 @@ public class GrabArm extends SubsystemBase {
         _compensationExtension = - (motorOutputE / Constants.GrabArm.extensionStallTorque) * 0.8; // output / stall torque
 
         if(_extensionEncoder.getPosition() > 10.2){
-            _compensationExtension = _compensationExtension * 0.5;
+            _compensationExtension = _compensationExtension * 0.05;
         }
     }
 
@@ -350,7 +352,11 @@ public class GrabArm extends SubsystemBase {
     }
 
     public void stationaryExtension(){
+        if(_extensionEncoder.getPosition() >= _stationaryExtension){
         engageServo();
+        } else {
+            disengageServo();
+        }
         _extensionController.setReference(_stationaryExtension, ControlType.kPosition,0, _compensationExtension, ArbFFUnits.kPercentOut);
     }
 
@@ -369,7 +375,7 @@ public class GrabArm extends SubsystemBase {
 
     public void goToDesiredExtensionPosition(){
         disengageServo();
-        var position = _extensionProfile.calculate(commandTime()).position;
+        var position = _extensionProfile.calculate(commandTime()-0.02).position;
         _extensionController.setReference(position, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
     }
     

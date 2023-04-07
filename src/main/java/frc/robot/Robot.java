@@ -5,6 +5,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.config.CTREConfigs;
@@ -19,6 +21,13 @@ public class Robot extends TimedRobot {
   public static CTREConfigs ctreConfigs;
   private Command m_autonomousCommand;
 
+  public final static String auto1 = "Auto1-TopCone-GrabCube-Balance-Top";
+  public final static String auto2 = "Auto2-TopCone-Balance";
+  public final static String auto3 = "Auto3-TopCone-GrabCube-Bottom";
+  public final static String auto4 = "Auto4-TopCone-GrabCube-TopCube-Top";
+  public static String m_selected;
+  private final SendableChooser<String> m_Chooser = new SendableChooser<>();
+
   private RobotContainer m_robotContainer;
 
   /**
@@ -31,6 +40,12 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
+
+    m_Chooser.setDefaultOption(auto1, auto1);
+    m_Chooser.addOption(auto2, auto2);
+    m_Chooser.addOption(auto3, auto3);
+    m_Chooser.addOption(auto4, auto4);
+    SmartDashboard.putData("Auto choices", m_Chooser);
   }
 
   /**
@@ -81,7 +96,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    
+    m_robotContainer.teleopInit();
   }
 
   /** This function is called periodically during operator control. */

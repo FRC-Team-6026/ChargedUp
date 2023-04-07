@@ -31,6 +31,8 @@ public class Swerve extends SubsystemBase {
 
   private Field2d field;
 
+  private boolean negativePitch = false;
+
   public static boolean leveling = false;
 
   public Swerve() {
@@ -116,6 +118,7 @@ public class Swerve extends SubsystemBase {
   public void zeroGyro() {
     gyro.zeroYaw();
     gyro.setAngleAdjustment(0);
+    negativePitch = false;
   }
 
   public void adjustAngle(double angle){
@@ -170,6 +173,19 @@ public Command followTrajectoryCommand(PathPlannerTrajectory traj, boolean isFir
       SmartDashboard.putNumber(
           "Mod " + mod.moduleNumber + " Velocity", mod.getState().speedMetersPerSecond);      
     }
+  }
+
+  public float getPitch(){
+    if (negativePitch){
+      return -gyro.getPitch();
+    } else {
+      return gyro.getPitch();
+    }
+  }
+
+  public void invertGyro(){
+    gyro.setAngleAdjustment(180);
+    negativePitch = true;
   }
 
   public AHRS getGyro(){

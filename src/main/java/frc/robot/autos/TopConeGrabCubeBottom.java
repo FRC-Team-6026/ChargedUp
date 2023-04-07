@@ -13,24 +13,22 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
-
+import frc.robot.commands.LevelRobot;
 import frc.robot.commands.GrabArmCommands.GrabArmPositionHandler;
 import frc.robot.subsystems.GrabArm;
 
 import frc.robot.subsystems.Swerve;
 import frc.robot.subsystems.GrabArm.GrabArmPositions;
 
-import com.kauailabs.navx.frc.AHRS;
+public class TopConeGrabCubeBottom extends SequentialCommandGroup {
 
-public class ExampleAuto extends SequentialCommandGroup {
-
-  public ExampleAuto(Swerve s_Swerve, GrabArm _Arm) {
+  public TopConeGrabCubeBottom(Swerve s_Swerve, GrabArm _Arm) {
     
     addRequirements(s_Swerve);
     addRequirements(_Arm);
     // This will load the file "FullAuto.path" and generate it with a max velocity of 4 m/s and a max acceleration of 3 m/s^2
     // for every path in the group
-    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("TopCubeGrabCubeBalance", new PathConstraints(Constants.AutoConstants.kMaxSpeedMetersPerSecond, Constants.AutoConstants.kMaxAccelerationMetersPerSecondSquared));
+    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("TopConeGrabCubeBalance", new PathConstraints(4, 8));
 
     // This is just an example event map. It would be better to have a constant, global event map
     // in your code that will be used by all path following commands.
@@ -56,6 +54,12 @@ public class ExampleAuto extends SequentialCommandGroup {
         true, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true
         s_Swerve // The drive subsystem. Used to properly set the requirements of path following commands
     );
+    addCommands(new InstantCommand(() -> _Arm.closeGrabber()));
+    addCommands(new InstantCommand(() -> s_Swerve.xPatternFalse()));
+    addCommands(new InstantCommand(() -> s_Swerve.invertGyro()));
+    addCommands(GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCone, true));
+    addCommands(new InstantCommand(() -> _Arm.openGrabber()));
     addCommands(autoBuilder.fullAuto(pathGroup));
+    addCommands(new LevelRobot(s_Swerve));
   }
 }
