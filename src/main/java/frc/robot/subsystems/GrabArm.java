@@ -299,7 +299,7 @@ public class GrabArm extends SubsystemBase {
                 return Floor;
             };
         },
-        TopCone(178,21),
+        TopCone(172,20.25),
         TopCube(181.7,15.7),
         MidCone(178,3.9),
         MidCube(197,2),

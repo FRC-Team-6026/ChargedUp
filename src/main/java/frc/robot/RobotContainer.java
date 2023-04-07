@@ -150,7 +150,7 @@ public class RobotContainer {
       return new TopConeGrabCubeTopCubeTop(_swerve, _grabArm);
     }
     // An ExampleCommand will run in autonomous
-    return null;
+    return new TopConeGrabCubeBalanceTop(_swerve, _grabArm);
   }
 
   public void teleopInit(){
