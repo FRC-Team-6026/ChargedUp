@@ -48,8 +48,9 @@ public class GrabArm extends SubsystemBase {
     private double _targetRotation = 0;
 
     private boolean _zeroedRotationOnPress = false;
-    private boolean _zeroedRotationOnReleast = false;
     private boolean _zeroedExtension = false;
+
+    private boolean _comingFromCommand = false;
 
     private Timer _commandTimer;
     private TrapezoidProfile _rotationProfile;
@@ -131,14 +132,8 @@ public class GrabArm extends SubsystemBase {
             _targetRotation = 0;
             _zeroedRotationOnPress = true;
             }
-            _zeroedRotationOnReleast = false;
         } else {
             _zeroedRotationOnPress = false;
-
-            if(!_zeroedRotationOnReleast){
-            _rotationEncoder.setPosition(0);
-            _zeroedRotationOnReleast = true;
-            }
         }
         
 
@@ -176,10 +171,14 @@ public class GrabArm extends SubsystemBase {
         var extensionIps = extensionRatio * Constants.GrabArm.maxIpsExecution;
 
         //set the stationary rotation when the arm comes to a stop.
-        if (rotationRatio == 0 && !_isStationaryRotation) {
+        if ((rotationRatio == 0 && !_isStationaryRotation) || _comingFromCommand) {
             _isStationaryRotation = true;
+            if(_comingFromCommand){
+                _comingFromCommand = false;
+            } else {
             _stationaryRotation = _rotationEncoder.getPosition();
             _targetRotation = _stationaryRotation;
+            }
         } else if (rotationRatio != 0) {
             if(_isStationaryRotation){
                 _isStationaryRotation = !_isStationaryRotation;
@@ -293,24 +292,25 @@ public class GrabArm extends SubsystemBase {
     }
 
     public enum GrabArmPositions {
-        Substation (178,1) {
+        Substation (179.6,1) {
             @Override
             public GrabArmPositions previous() {
                 return Floor;
             };
         },
-        TopCone(172,20.25),
+        TopCone(174,20.25),
         TopCube(181.7,15.7),
         MidCone(178,3.9),
         MidCube(197,2),
-        Floor(5,18) {
+        Floor(5,16.25) {
             @Override
             public GrabArmPositions next() {
                 return Substation;
             };
         },
         Stow(5,0),
-        TravelLimit(0,4);
+        TravelLimit(0,4),
+        TopConeAuto(178,21);
         private final double rotation;
         private final double extension;
         GrabArmPositions(double rotation, double extension){
@@ -352,7 +352,7 @@ public class GrabArm extends SubsystemBase {
     }
 
     public void stationaryExtension(){
-        if(_extensionEncoder.getPosition() >= _stationaryExtension){
+        if(_extensionEncoder.getPosition() + 0.05 >= _stationaryExtension){
         engageServo();
         } else {
             disengageServo();
@@ -375,7 +375,7 @@ public class GrabArm extends SubsystemBase {
 
     public void goToDesiredExtensionPosition(){
         disengageServo();
-        var position = _extensionProfile.calculate(commandTime()-0.02).position;
+        var position = _extensionProfile.calculate(commandTime()).position;
         _extensionController.setReference(position, ControlType.kPosition, 0, _compensationExtension, ArbFFUnits.kPercentOut);
     }
     
@@ -468,5 +468,9 @@ public class GrabArm extends SubsystemBase {
 
     private double commandTime(){
         return _commandTimer.get() + Constants.GrabArm.codeExecutionRateTime;
+    }
+
+    public void comingFromCommand(){
+        _comingFromCommand = true;
     }
 }

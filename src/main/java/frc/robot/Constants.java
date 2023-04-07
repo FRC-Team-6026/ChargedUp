@@ -22,7 +22,7 @@ public final class Constants {
     /* Drivetrain Constants */
     public static final double trackWidth = Units.inchesToMeters(18.75);
     public static final double wheelBase = Units.inchesToMeters(27.25);
-    public static final double wheelDiameter = Units.inchesToMeters(4.0);
+    public static final double wheelDiameter = 98.0 / 1000.0; // mm to m
     public static final double wheelCircumference = wheelDiameter * Math.PI;
 
     public static final double openLoopRamp = 0.25;
@@ -204,8 +204,8 @@ public final class Constants {
     public static final double maxRotationAccDps = 45.0;
     public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
     public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
-    public static final double maxIps = 8.0;
-    public static final double maxIpsAcc = 10.0;
+    public static final double maxIps = 10.0;
+    public static final double maxIpsAcc = 8.0;
     public static final double maxIpsExecution = maxIps / codeExecutionRate;
     public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
     public static final double maxAutoPositionRotationDps = 125;
@@ -218,7 +218,7 @@ public final class Constants {
 
     public static final double rotationOffsetinDegrees = 27;
     public static final double heightLimit = 72; // Max Height Minus 6''
-    public static final double pivotHeightInches = 26.5;
+    public static final double pivotHeightInches = 26.5;  
     public static final double baseArmLength = 32.5;
     public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
     public static final double coneWeightLb = 1.4375;

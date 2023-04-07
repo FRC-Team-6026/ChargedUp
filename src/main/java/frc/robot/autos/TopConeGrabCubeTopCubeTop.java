@@ -28,7 +28,7 @@ public class TopConeGrabCubeTopCubeTop extends SequentialCommandGroup {
     addRequirements(_Arm);
     // This will load the file "FullAuto.path" and generate it with a max velocity of 4 m/s and a max acceleration of 3 m/s^2
     // for every path in the group
-    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("TopConeGrabCubeTopCubeTop", new PathConstraints(4, 8));
+    List<PathPlannerTrajectory> pathGroup = PathPlanner.loadPathGroup("TopConeGrabCubeTopCubeTop", new PathConstraints(4, 3));
 
     // This is just an example event map. It would be better to have a constant, global event map
     // in your code that will be used by all path following commands.
@@ -37,7 +37,7 @@ public class TopConeGrabCubeTopCubeTop extends SequentialCommandGroup {
     eventMap.put("closeGrabber", new InstantCommand(() -> _Arm.closeGrabber()));
     eventMap.put("stow", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.Stow, true));
     eventMap.put("floor", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.Floor, true));
-    eventMap.put("topCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCone, true));
+    eventMap.put("topCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopConeAuto, true));
     eventMap.put("topCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCube, true));
     eventMap.put("midCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCone, true));
     eventMap.put("midCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCube, true));

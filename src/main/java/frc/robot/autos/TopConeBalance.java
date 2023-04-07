@@ -37,7 +37,7 @@ public class TopConeBalance extends SequentialCommandGroup {
     eventMap.put("closeGrabber", new InstantCommand(() -> _Arm.closeGrabber()));
     eventMap.put("stow", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.Stow, true));
     eventMap.put("floor", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.Floor, true));
-    eventMap.put("topCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCone, true));
+    eventMap.put("topCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopConeAuto, true));
     eventMap.put("topCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCube, true));
     eventMap.put("midCone", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCone, true));
     eventMap.put("midCube", GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.MidCube, true));
