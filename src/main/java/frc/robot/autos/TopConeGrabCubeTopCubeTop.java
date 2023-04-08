@@ -12,6 +12,7 @@ import com.pathplanner.lib.auto.SwerveAutoBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.commands.LevelRobot;
 import frc.robot.commands.GrabArmCommands.GrabArmPositionHandler;
@@ -58,6 +59,7 @@ public class TopConeGrabCubeTopCubeTop extends SequentialCommandGroup {
     addCommands(new InstantCommand(() -> s_Swerve.xPatternFalse()));
     addCommands(new InstantCommand(() -> s_Swerve.invertGyro()));
     addCommands(GrabArmPositionHandler.PositionHandler(_Arm, GrabArmPositions.TopCone, true));
+    addCommands(new WaitCommand(.25));
     addCommands(new InstantCommand(() -> _Arm.openGrabber()));
     addCommands(autoBuilder.fullAuto(pathGroup));
     addCommands(new LevelRobot(s_Swerve));

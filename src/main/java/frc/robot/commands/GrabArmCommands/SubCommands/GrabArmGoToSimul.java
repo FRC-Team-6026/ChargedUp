@@ -61,6 +61,10 @@ public class GrabArmGoToSimul extends CommandBase {
   public void end(boolean interrupted) {
     _Arm.stopNClearTimer();
     _Arm.comingFromCommand();
+    _Arm.desiredRotationToStationary(_desiredPosition);
+    _Arm.desiredExtensionToStationary(_desiredPosition);
+    _Arm.desiredRotationToTarget(_desiredPosition);
+    _Arm.desiredExtensionToTarget(_desiredPosition);
   }
 
   // Returns true when the command should end.
