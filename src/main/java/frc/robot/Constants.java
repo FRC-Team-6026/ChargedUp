@@ -11,7 +11,7 @@ import frc.lib.config.SwerveModuleConstants;
 public final class Constants {
 
   public static final class Swerve {
-    public static final double stickDeadband = 0.06;
+    public static final double stickDeadband = 0.07;
 
     //Leveling Constants
     public static final double levelingMaxVelocityMs = 0.75;
@@ -22,7 +22,7 @@ public final class Constants {
     /* Drivetrain Constants */
     public static final double trackWidth = Units.inchesToMeters(18.75);
     public static final double wheelBase = Units.inchesToMeters(27.25);
-    public static final double wheelDiameter = Units.inchesToMeters(4.0);
+    public static final double wheelDiameter = 98.5 / 1000.0; // mm to m
     public static final double wheelCircumference = wheelDiameter * Math.PI;
 
     public static final double openLoopRamp = 0.25;
@@ -130,8 +130,8 @@ public final class Constants {
   }
 
   public static final class AutoConstants {
-    public static final double kMaxSpeedMetersPerSecond = 1.5;
-    public static final double kMaxAccelerationMetersPerSecondSquared = 1.5;
+    public static final double kMaxSpeedMetersPerSecond = 4;
+    public static final double kMaxAccelerationMetersPerSecondSquared = 8;
     public static final double kMaxAngularSpeedRadiansPerSecond = Math.PI;
     public static final double kMaxAngularSpeedRadiansPerSecondSquared = Math.PI;
 
@@ -204,21 +204,21 @@ public final class Constants {
     public static final double maxRotationAccDps = 45.0;
     public static final double maxRotationExecution = maxRotationDps / codeExecutionRate;
     public static final double maxRotationAccDpsExecution = maxRotationAccDps / codeExecutionRate;
-    public static final double maxIps = 7.0;
-    public static final double maxIpsAcc = 3.0;
+    public static final double maxIps = 10.0;
+    public static final double maxIpsAcc = 8.0;
     public static final double maxIpsExecution = maxIps / codeExecutionRate;
     public static final double maxIpsAccExecution = maxIpsAcc / codeExecutionRate;
-    public static final double maxAutoPositionRotationDps = 175;
-    public static final double maxAutoPositionRotationDpsAcc = 125;
-    public static final double maxAutoPositionMaxIps = 30.0;
-    public static final double maxAutoPositionMaxIpsAcc = 25;
+    public static final double maxAutoPositionRotationDps = 125;
+    public static final double maxAutoPositionRotationDpsAcc = 175;
+    public static final double maxAutoPositionMaxIps = 15.0;
+    public static final double maxAutoPositionMaxIpsAcc = 30.0;
 
     public static final float rotationForwardSoftLimitDegrees = 205;
-    public static final float extensionForwardSoftLimitInches = 20;
+    public static final float extensionForwardSoftLimitInches = 21;
 
     public static final double rotationOffsetinDegrees = 27;
     public static final double heightLimit = 72; // Max Height Minus 6''
-    public static final double pivotHeightInches = 26.5;
+    public static final double pivotHeightInches = 26.5;  
     public static final double baseArmLength = 32.5;
     public static final double maxExtensionHeight = heightLimit - pivotHeightInches;
     public static final double coneWeightLb = 1.4375;

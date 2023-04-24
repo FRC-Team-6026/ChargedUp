@@ -108,7 +108,6 @@ public class RobotContainer {
     //driveToTargetCenter.onTrue(new DriveToTarget(_swerve, _limelight, 0));
     //driveToTargetRight.onTrue(new DriveToTarget(_swerve, _limelight, 1));
     resetOdometry.onTrue(new InstantCommand(() -> _swerve.resetToAbsolute()));
-    //xSwerve.onTrue(new LevelRobot(_swerve, _swerve.getGyro()));
     xSwerve.onTrue(new InstantCommand(() -> _swerve.xPattern()));
 
 
@@ -139,7 +138,22 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     _swerve.resetToAbsolute();
+
+    switch(Robot.m_selected) {
+    case Robot.auto1:
+      return new TopConeGrabCubeBalanceTop(_swerve, _grabArm);
+    case Robot.auto2:
+      return new TopConeBalance(_swerve, _grabArm);
+    case Robot.auto3:
+      return new TopConeGrabCubeBottom(_swerve, _grabArm);
+    case Robot.auto4:
+      return new TopConeGrabCubeTopCubeTop(_swerve, _grabArm);
+    }
     // An ExampleCommand will run in autonomous
-    return new ExampleAuto(_swerve, _swerve.getGyro());
+    return new TopConeBalance(_swerve, _grabArm);
+  }
+
+  public void teleopInit(){
+    _swerve.xPatternFalse();
   }
 }

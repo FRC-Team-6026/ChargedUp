@@ -1,0 +1,99 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 1.9318215380616814,
+        "y": 5.004782388813436
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.319968847451111,
+        "y": 4.60325256965362
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "stow"
+        ],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 6.420351302241066,
+        "y": 4.58891221896934
+      },
+      "prevControl": {
+        "x": 5.387447786709641,
+        "y": 4.58891221896934
+      },
+      "nextControl": {
+        "x": 5.387447786709641,
+        "y": 4.58891221896934
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": true,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": true,
+      "stopEvent": {
+        "names": [
+          "floor",
+          "closeGrabber"
+        ],
+        "executionBehavior": "sequential",
+        "waitBehavior": "minimum",
+        "waitTime": 1.5
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.9318215380616814,
+        "y": 4.402487660073711
+      },
+      "prevControl": {
+        "x": 6.0761828858183655,
+        "y": 4.531550816232223
+      },
+      "nextControl": null,
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "topCube",
+          "openGrabber",
+          "stow"
+        ],
+        "executionBehavior": "sequential",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "maxVelocity": 4.0,
+  "maxAcceleration": null,
+  "isReversed": null,
+  "markers": [
+    {
+      "position": 0.1,
+      "names": [
+        "floor"
+      ]
+    },
+    {
+      "position": 1.5636363636363613,
+      "names": [
+        "stow"
+      ]
+    }
+  ]
+}

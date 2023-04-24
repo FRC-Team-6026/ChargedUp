@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import com.kauailabs.navx.frc.AHRS;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
@@ -17,12 +15,10 @@ public class LevelRobot extends CommandBase{
     private final Timer _timer = new Timer();
 
     private final Swerve _swerve;
-    private final AHRS _gyro;
     
-    public LevelRobot(Swerve swerve, AHRS gyro) {
+    public LevelRobot(Swerve swerve) {
         super();
         _swerve = swerve;
-        _gyro = gyro;
         addRequirements(_swerve);
     }
 
@@ -39,9 +35,9 @@ public class LevelRobot extends CommandBase{
 
     @Override
     public boolean isFinished(){
-        if(Math.abs(_gyro.getPitch()) < _tolerance && _timer.advanceIfElapsed(2)){
+        if(Math.abs(_swerve.getPitch()) < _tolerance && _timer.advanceIfElapsed(2)){
             return true;
-        } else if(_gyro.getPitch() > _tolerance){
+        } else if(_swerve.getPitch() > _tolerance){
             _timer.restart();
         }
         return false;
@@ -53,7 +49,7 @@ public class LevelRobot extends CommandBase{
     }
 
     private double getPitchRatio(){
-        double pitch = _gyro.getPitch();
+        double pitch = _swerve.getPitch();
         if(MathUtil.applyDeadband(pitch, _tolerance) == 0){
             return 0.0;
         }
